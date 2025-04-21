@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Name Tag Reader - Test Runner</title>
+    
+    <!-- Include coverage analysis tool -->
+    <script src="coverage_analysis.js"></script>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -115,13 +118,16 @@
     
     <div class="btn-group">
         <button id="runTestsBtn" class="btn btn-primary">Run All Tests</button>
+        <button id="coverageBtn" class="btn btn-outline-primary ms-2">Generate Coverage Report</button>
     </div>
     
     <div id="testResults" class="test-container">
         <p>Click "Run All Tests" to start testing.</p>
     </div>
     
-    <div id="coverageResults" class="coverage-container"></div>
+    <div id="coverageResults" class="coverage-container">
+        <p>Click "Generate Coverage Report" after running tests to see detailed coverage metrics.</p>
+    </div>
     
     <!-- Mock DOM elements for testing -->
     <div style="display: none;">
@@ -359,12 +365,74 @@
             });
         });
         
+        // Load test files
+        async function loadTestFiles() {
+            // Load OCR processing tests
+            const ocrTests = await fetch('ocr_processing.test.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Failed to load OCR tests:', error);
+                    return '';
+                });
+            
+            // Load integration tests
+            const integrationTests = await fetch('integration.test.js')
+                .then(response => response.text())
+                .catch(error => {
+                    console.error('Failed to load integration tests:', error);
+                    return '';
+                });
+            
+            // Execute the test scripts
+            if (ocrTests) {
+                try {
+                    eval(ocrTests);
+                } catch (error) {
+                    console.error('Error executing OCR tests:', error);
+                }
+            }
+            
+            if (integrationTests) {
+                try {
+                    eval(integrationTests);
+                } catch (error) {
+                    console.error('Error executing integration tests:', error);
+                }
+            }
+        }
+        
+        // Generate coverage report
+        function generateCoverageReport() {
+            const coverageResults = document.getElementById('coverageResults');
+            
+            if (typeof window.generateCoverageReport === 'function') {
+                try {
+                    const reportHtml = window.generateCoverageReport();
+                    coverageResults.innerHTML = reportHtml;
+                } catch (error) {
+                    console.error('Error generating coverage report:', error);
+                    coverageResults.innerHTML = `<p class="text-danger">Error generating coverage report: ${error.message}</p>`;
+                }
+            } else {
+                coverageResults.innerHTML = `<p class="text-warning">Coverage analysis tool not properly initialized. Make sure coverage_analysis.js is loaded.</p>`;
+            }
+        }
+        
         // Run tests when button is clicked
         document.getElementById('runTestsBtn').addEventListener('click', async () => {
             const testResults = document.getElementById('testResults');
-            testResults.innerHTML = '<p>Running tests...</p>';
+            testResults.innerHTML = '<p>Loading tests and running...</p>';
             
             try {
+                // Start coverage tracking
+                if (typeof window.startCoverageTracking === 'function') {
+                    window.startCoverageTracking();
+                }
+                
+                // Load test files first
+                await loadTestFiles();
+                
+                // Then run the tests
                 const results = await TestFramework.runTests();
                 
                 let html = '';
@@ -428,13 +496,45 @@
                             <td>Multiple Image Handling</td>
                             <td>✅ Tested</td>
                         </tr>
+                        <tr>
+                            <td>OCR Text Parsing</td>
+                            <td>✅ Tested</td>
+                        </tr>
+                        <tr>
+                            <td>Image Preprocessing</td>
+                            <td>✅ Tested</td>
+                        </tr>
+                        <tr>
+                            <td>OCR Processing Workflow</td>
+                            <td>✅ Tested</td>
+                        </tr>
+                        <tr>
+                            <td>Data Management</td>
+                            <td>✅ Tested</td>
+                        </tr>
+                        <tr>
+                            <td>Integration: Upload → Process → Display</td>
+                            <td>✅ Tested</td>
+                        </tr>
+                        <tr>
+                            <td>Camera Capture Workflow</td>
+                            <td>✅ Tested</td>
+                        </tr>
                     </table>
                 `;
                 
             } catch (error) {
                 testResults.innerHTML = `<p>Error running tests: ${error.message}</p>`;
+            } finally {
+                // Stop coverage tracking
+                if (typeof window.stopCoverageTracking === 'function') {
+                    window.stopCoverageTracking();
+                }
             }
         });
+        
+        // Generate coverage report when button is clicked
+        document.getElementById('coverageBtn').addEventListener('click', generateCoverageReport);
     </script>
 </body>
 </html>
