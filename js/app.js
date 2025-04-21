@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const exportCSV = document.getElementById('exportCSV');
     const exportJSON = document.getElementById('exportJSON');
     const manualEntryForm = document.getElementById('manualEntryForm');
+    const tableSearch = document.getElementById('tableSearch');
     
     // Event listeners
     imageUpload.addEventListener('change', handleImageUpload);
@@ -98,6 +99,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportCSV.addEventListener('click', () => downloadData('csv'));
     exportJSON.addEventListener('click', () => downloadData('json'));
     manualEntryForm.addEventListener('submit', handleManualEntry);
+    
+    // Add event listeners for table sorting
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            handleTableSort(th.dataset.sort);
+        });
+    });
+    
+    // Add event listener for table filtering
+    if (tableSearch) {
+        tableSearch.addEventListener('input', (e) => {
+            handleTableFilter(e.target.value);
+        });
+    }
     
     // Initialize Tesseract worker
     try {
@@ -127,11 +142,28 @@ function handleImageUpload(event) {
     const files = event.target.files;
     if (files.length === 0) return;
     
-    uploadedImages = Array.from(files);
+    // Clear existing images if not holding shift key during upload
+    if (!event.shiftKey) {
+        uploadedImages = [];
+    }
+    
+    // Add new files to uploadedImages array
+    for (let i = 0; i < files.length; i++) {
+        uploadedImages.push(files[i]);
+    }
+    
+    // Reset current image index
     currentImageIndex = 0;
     
     // Display the first image
-    displayImage(uploadedImages[0]);
+    displayImage(uploadedImages[currentImageIndex]);
+    
+    // Show notification with count of images
+    if (files.length > 1) {
+        showNotification('success', 'Images Uploaded', `${files.length} images have been uploaded. Use the navigation controls to browse through them.`);
+    } else {
+        showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully.');
+    }
     
     // Update process button state
     UIManager.updateProcessButtonState();
@@ -140,132 +172,141 @@ function handleImageUpload(event) {
     showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully. Click "Process Images" to extract data.');
 }
 
-// Handle drag and drop functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const uploadArea = document.querySelector('.upload-area');
-    
-    if (uploadArea) {
-        // Prevent default drag behaviors
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, preventDefaults, false);
-        });
-        
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        // Highlight drop area when item is dragged over it
-        ['dragenter', 'dragover'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, highlight, false);
-        });
-        
-        ['dragleave', 'drop'].forEach(eventName => {
-            uploadArea.addEventListener(eventName, unhighlight, false);
-        });
-        
-        function highlight() {
-            uploadArea.classList.add('border-primary');
-            uploadArea.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
-        }
-        
-        function unhighlight() {
-            uploadArea.classList.remove('border-primary');
-            uploadArea.style.backgroundColor = '';
-        }
-        
-        // Handle dropped files
-        uploadArea.addEventListener('drop', handleDrop, false);
-        
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            
-            if (files.length > 0) {
-                document.getElementById('imageUpload').files = files;
-                handleImageUpload({ target: { files } });
-            }
-        }
-        
-        // Handle click on upload area
-        uploadArea.addEventListener('click', () => {
-            document.getElementById('imageUpload').click();
-        });
-    }
-});
-
 // Display image in preview area
 function displayImage(file) {
-    console.log('displayImage called with file:', file ? file.name : 'null');
-    
-    // Get the preview container
     const imagePreview = document.getElementById('imagePreview');
-    if (!imagePreview) {
-        console.error('Image preview element not found');
+    const previewControls = imagePreview.querySelector('.preview-controls');
+    const imageCounter = imagePreview.querySelector('.image-counter');
+    const currentImageCountEl = document.getElementById('currentImageCount');
+    const totalImageCountEl = document.getElementById('totalImageCount');
+    
+    // Show loading indicator
+    const emptyPreview = imagePreview.querySelector('.empty-preview');
+    if (emptyPreview) {
+        emptyPreview.innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading image...</p>
+        `;
+    } else {
+        // Create loading indicator if empty preview doesn't exist
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'text-center';
+        loadingIndicator.innerHTML = `
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading image...</p>
+        `;
+        
+        // Clear existing content and add loading indicator
+        imagePreview.innerHTML = '';
+        imagePreview.appendChild(loadingIndicator);
+    }
+    
+    if (!file) {
+        // No file provided, show empty state
+        imagePreview.innerHTML = `
+            <div class="empty-preview">
+                <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
+                <p class="text-muted">No image selected</p>
+            </div>
+            <div class="preview-controls d-none">
+                <button class="btn btn-sm btn-light" id="prevImageBtn">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <button class="btn btn-sm btn-light" id="nextImageBtn">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+            <div class="image-counter d-none">
+                <span id="currentImageCount">1</span>/<span id="totalImageCount">1</span>
+            </div>
+        `;
+        
+        // Update process button state
+        UIManager.updateProcessButtonState();
         return;
     }
     
-    // Clear previous content
-    imagePreview.innerHTML = '';
+    // Create image object
+    const img = new Image();
     
-    if (file) {
-        // Show loading indicator first
-        const loadingEl = document.createElement('div');
-        loadingEl.className = 'text-center';
-        loadingEl.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
-        imagePreview.appendChild(loadingEl);
+    // Set up onload handler
+    img.onload = function(e) {
+        // Clear loading indicator and show image
+        imagePreview.innerHTML = '';
+        imagePreview.appendChild(img);
         
-        const reader = new FileReader();
+        // Add navigation controls back
+        const newPreviewControls = document.createElement('div');
+        newPreviewControls.className = 'preview-controls' + (uploadedImages.length > 1 ? '' : ' d-none');
+        newPreviewControls.innerHTML = `
+            <button class="btn btn-sm btn-light" id="prevImageBtn">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <button class="btn btn-sm btn-light" id="nextImageBtn">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        `;
+        imagePreview.appendChild(newPreviewControls);
         
-        reader.onload = function(e) {
-            // Remove loading indicator
-            imagePreview.innerHTML = '';
-            
-            // Create and add image element
-            const img = document.createElement('img');
-            img.src = e.target.result;
-            img.alt = 'Preview';
-            img.className = 'img-fluid';
-            imagePreview.appendChild(img);
-            
-            console.log('Image added to preview container');
-            
-            // Enable the process button
-            document.getElementById('processBtn').disabled = false;
-        };
+        // Add image counter
+        const newImageCounter = document.createElement('div');
+        newImageCounter.className = 'image-counter' + (uploadedImages.length > 1 ? '' : ' d-none');
+        newImageCounter.innerHTML = `
+            <span id="currentImageCount">${currentImageIndex + 1}</span>/<span id="totalImageCount">${uploadedImages.length}</span>
+        `;
+        imagePreview.appendChild(newImageCounter);
         
-        reader.onerror = function() {
-            // Show error state
-            imagePreview.innerHTML = '';
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'empty-preview';
-            errorDiv.innerHTML = `
+        // Add event listeners for navigation buttons
+        document.getElementById('prevImageBtn').addEventListener('click', navigateToPreviousImage);
+        document.getElementById('nextImageBtn').addEventListener('click', navigateToNextImage);
+        
+        // Update process button state
+        UIManager.updateProcessButtonState();
+        
+        console.log('Image loaded successfully');
+    };
+    
+    // Set up error handler
+    img.onerror = function() {
+        // Show error state
+        imagePreview.innerHTML = `
+            <div class="empty-preview">
                 <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
                 <p class="text-danger">Error loading image</p>
-            `;
-            imagePreview.appendChild(errorDiv);
-            
-            console.error('Error reading file');
-        };
-        
-        // Start reading the file
-        try {
-            reader.readAsDataURL(file);
-        } catch (error) {
-            console.error('Exception when reading file:', error);
-            reader.onerror();
-        }
-    } else {
-        // Show empty state
-        const emptyDiv = document.createElement('div');
-        emptyDiv.className = 'empty-preview';
-        emptyDiv.innerHTML = `
-            <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
-            <p class="text-muted">No image selected</p>
+            </div>
         `;
-        imagePreview.appendChild(emptyDiv);
-    }
+        
+        console.error('Error loading image');
+    };
+    
+    // Start loading the image
+    img.src = URL.createObjectURL(file);
+    img.alt = file.name || 'Uploaded image';
+    img.className = 'img-fluid';
+}
+
+// Navigate to previous image
+function navigateToPreviousImage(event) {
+    event.stopPropagation(); // Prevent event bubbling
+    
+    if (uploadedImages.length <= 1) return;
+    
+    currentImageIndex = (currentImageIndex - 1 + uploadedImages.length) % uploadedImages.length;
+    displayImage(uploadedImages[currentImageIndex]);
+}
+
+// Navigate to next image
+function navigateToNextImage(event) {
+    event.stopPropagation(); // Prevent event bubbling
+    
+    if (uploadedImages.length <= 1) return;
+    
+    currentImageIndex = (currentImageIndex + 1) % uploadedImages.length;
+    displayImage(uploadedImages[currentImageIndex]);
 }
 
 // Process all uploaded images
@@ -682,31 +723,73 @@ function parseOCRResult(text) {
     }
 }
 
+// Global variables for table sorting and filtering
+let currentSortField = null;
+let currentSortDirection = 'asc';
+let currentFilter = '';
+
 // Update the result table with extracted data
 function updateResultTable() {
     const resultBody = document.getElementById('resultBody');
     const noResults = document.getElementById('noResults');
+    const resultCount = document.getElementById('resultCount');
     
     // Clear existing rows
     resultBody.innerHTML = '';
     
     if (extractedData.length === 0) {
         noResults.style.display = 'block';
+        resultCount.textContent = '0';
         return;
     }
     
     noResults.style.display = 'none';
     
+    // Sort data if needed
+    let displayData = [...extractedData];
+    
+    if (currentSortField) {
+        displayData.sort((a, b) => {
+            const valueA = (a[currentSortField] || '').toLowerCase();
+            const valueB = (b[currentSortField] || '').toLowerCase();
+            
+            if (currentSortDirection === 'asc') {
+                return valueA.localeCompare(valueB);
+            } else {
+                return valueB.localeCompare(valueA);
+            }
+        });
+    }
+    
+    // Filter data if needed
+    if (currentFilter) {
+        const filterLower = currentFilter.toLowerCase();
+        displayData = displayData.filter(item => {
+            return (
+                (item.name && item.name.toLowerCase().includes(filterLower)) ||
+                (item.organization && item.organization.toLowerCase().includes(filterLower))
+            );
+        });
+    }
+    
+    // Update result count
+    resultCount.textContent = displayData.length.toString();
+    
     // Add rows for each extracted item
-    extractedData.forEach((item, index) => {
+    displayData.forEach((item, index) => {
         const row = document.createElement('tr');
+        
+        // Find the original index in the extractedData array
+        const originalIndex = extractedData.findIndex(data => 
+            data.name === item.name && data.organization === item.organization
+        );
         
         row.innerHTML = `
             <td class="text-center">${index + 1}</td>
-            <td class="editable" data-field="name" data-index="${index}">${item.name}</td>
-            <td class="editable" data-field="organization" data-index="${index}">${item.organization}</td>
+            <td class="editable" data-field="name" data-index="${originalIndex}">${item.name}</td>
+            <td class="editable" data-field="organization" data-index="${originalIndex}">${item.organization}</td>
             <td class="text-center">
-                <button class="btn btn-sm btn-outline-danger delete-btn" data-index="${index}">
+                <button class="btn btn-sm btn-outline-danger delete-btn" data-index="${originalIndex}">
                     <i class="bi bi-trash"></i>
                 </button>
             </td>
@@ -725,10 +808,44 @@ function updateResultTable() {
         btn.addEventListener('click', deleteRow);
     });
     
-    // Add tooltip to editable cells
+    // Add tooltips to editable cells
+    addTooltipsToEditableCells();
+}
+
+// Handle table sorting
+function handleTableSort(field) {
+    // If clicking the same field, toggle direction
+    if (field === currentSortField) {
+        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+        currentSortField = field;
+        currentSortDirection = 'asc';
+    }
+    
+    // Update sort indicators in the UI
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.sort === currentSortField) {
+            th.classList.add(currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+    });
+    
+    // Update the table
+    updateResultTable();
+}
+
+// Handle table filtering
+function handleTableFilter(filterText) {
+    currentFilter = filterText.trim();
+    updateResultTable();
+}
+
+// Add tooltip to editable cells
+function addTooltipsToEditableCells() {
     document.querySelectorAll('.editable').forEach(cell => {
         cell.setAttribute('title', 'Click to edit');
     });
+}
 }
 
 // Make a cell editable
@@ -975,3 +1092,57 @@ function capturePhoto() {
         showNotification('error', 'Capture Failed', 'Failed to capture photo. Please try again.');
     }
 }
+
+// Handle drag and drop functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadArea = document.querySelector('.upload-area');
+    
+    if (uploadArea) {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            uploadArea.classList.add('border-primary');
+            uploadArea.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+        }
+        
+        function unhighlight() {
+            uploadArea.classList.remove('border-primary');
+            uploadArea.style.backgroundColor = '';
+        }
+        
+        // Handle dropped files
+        uploadArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('imageUpload').files = files;
+                handleImageUpload({ target: { files } });
+            }
+        }
+        
+        // Handle click on upload area
+        uploadArea.addEventListener('click', () => {
+            document.getElementById('imageUpload').click();
+        });
+    }
+});

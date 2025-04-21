@@ -36,7 +36,7 @@
         }
         #imagePreview {
             width: 100%;
-            min-height: 200px;
+            min-height: 250px;
             border: 1px solid #ddd;
             border-radius: 0.5rem;
             margin: 20px 0;
@@ -45,21 +45,82 @@
             justify-content: center;
             overflow: hidden;
             background-color: #f9f9f9;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        #imagePreview:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
         #imagePreview img {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 350px;
             display: block;
+            transition: transform 0.3s ease;
+        }
+        #imagePreview:hover img {
+            transform: scale(1.02);
         }
         .empty-preview {
             text-align: center;
             color: #6c757d;
+            padding: 2rem;
+        }
+        .preview-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.6);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #imagePreview:hover .preview-controls {
+            opacity: 1;
+        }
+        .image-counter {
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            background: rgba(0,0,0,0.5);
+            border-radius: 1rem;
+            position: absolute;
+            top: 10px;
+            right: 10px;
         }
         .table th {
             font-weight: 600;
         }
         .editable {
             cursor: pointer;
+        }
+        .sortable {
+            cursor: pointer;
+            position: relative;
+        }
+        .sortable:hover {
+            background-color: rgba(0,0,0,0.03);
+        }
+        .sort-icon {
+            font-size: 0.8rem;
+            opacity: 0.5;
+            margin-left: 5px;
+        }
+        .sortable.sort-asc .sort-icon {
+            opacity: 1;
+            transform: rotate(180deg);
+        }
+        .sortable.sort-desc .sort-icon {
+            opacity: 1;
+        }
+        .table-filters {
+            margin-bottom: 10px;
+        }
+        #tableSearch {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
         }
     </style>
 </head>
@@ -95,17 +156,32 @@
                         <div class="upload-area mb-3 p-4 text-center border border-1 border-dashed rounded">
                             <i class="bi bi-image display-4 text-primary mb-3"></i>
                             <p>Drag & drop image files here or</p>
-                            <label for="imageUpload" class="btn btn-outline-primary">
-                                <i class="bi bi-folder me-2"></i>Browse Files
-                            </label>
+                            <div class="d-flex justify-content-center gap-2">
+                                <label for="imageUpload" class="btn btn-outline-primary">
+                                    <i class="bi bi-folder me-2"></i>Browse Files
+                                </label>
+                                <button id="captureBtn" class="btn btn-outline-primary">
+                                    <i class="bi bi-camera me-2"></i>Use Camera
+                                </button>
+                            </div>
                             <input class="d-none" type="file" id="imageUpload" accept=".jpg,.jpeg,.png" multiple>
                             <p class="text-muted small mt-2">Supported formats: JPEG, PNG</p>
                         </div>
-                        
                         <div id="imagePreview">
                             <div class="empty-preview">
                                 <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
                                 <p class="text-muted">No image selected</p>
+                            </div>
+                            <div class="preview-controls d-none">
+                                <button class="btn btn-sm btn-light" id="prevImageBtn">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light" id="nextImageBtn">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            </div>
+                            <div class="image-counter d-none">
+                                <span id="currentImageCount">1</span>/<span id="totalImageCount">1</span>
                             </div>
                         </div>
                         
@@ -121,9 +197,6 @@
                         <div class="d-grid gap-2 mb-3">
                             <button id="processBtn" class="btn btn-primary w-100 mb-3" disabled>
                                 <i class="bi bi-magic me-2"></i>Process Images
-                            </button>
-                            <button id="captureBtn" class="btn btn-outline-primary">
-                                <i class="bi bi-camera me-2"></i>Capture from Camera
                             </button>
                         </div>
                         
@@ -150,65 +223,76 @@
                                 <i class="bi bi-table me-2 text-primary"></i>Extracted Data
                             </h5>
                             <div>
-                                <button id="exportCSV" class="btn btn-outline-primary btn-sm me-2">
-                                    <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+                                <button id="exportCSV" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>CSV
                                 </button>
-                                <button id="exportJSON" class="btn btn-outline-primary btn-sm">
-                                    <i class="bi bi-file-earmark-code me-1"></i> Export JSON
+                                <button id="exportJSON" class="btn btn-sm btn-outline-primary ms-1">
+                                    <i class="bi bi-file-earmark-code me-1"></i>JSON
                                 </button>
                             </div>
                         </div>
                         
                         <!-- Manual Entry Section -->
-                        <div class="card mb-3 bg-light border-0">
-                            <div class="card-body">
-                                <h6 class="card-title">
-                                    <i class="bi bi-pencil-square me-2 text-primary"></i>Manual Entry
-                                </h6>
-                                <form id="manualEntryForm" class="mt-3">
-                                    <div class="row g-2">
-                                        <div class="col-md-5">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="manualName" placeholder="Full Name">
-                                                <label for="manualName">Full Name</label>
+                        <div class="accordion mb-3" id="manualEntryAccordion">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="manualEntryHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#manualEntryCollapse" aria-expanded="false" aria-controls="manualEntryCollapse">
+                                        <i class="bi bi-pencil-square me-2 text-primary"></i>Manual Entry
+                                    </button>
+                                </h2>
+                                <div id="manualEntryCollapse" class="accordion-collapse collapse" aria-labelledby="manualEntryHeading" data-bs-parent="#manualEntryAccordion">
+                                    <div class="accordion-body">
+                                        <form id="manualEntryForm" class="mt-3">
+                                            <div class="row g-2">
+                                                <div class="col-md-5">
+                                                    <div class="form-floating">
+                                                        <input type="text" class="form-control" id="manualName" placeholder="Full Name">
+                                                        <label for="manualName">Full Name</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-5">
+                                                    <div class="form-floating">
+                                                        <input type="text" class="form-control" id="manualOrg" placeholder="Organization">
+                                                        <label for="manualOrg">Organization</label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2 d-flex align-items-center">
+                                                    <button type="submit" class="btn btn-primary w-100">
+                                                        <i class="bi bi-plus-circle me-1"></i>Add
+                                                    </button>
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="col-md-5">
-                                            <div class="form-floating">
-                                                <input type="text" class="form-control" id="manualOrg" placeholder="Organization">
-                                                <label for="manualOrg">Organization</label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-2 d-flex align-items-center">
-                                            <button type="submit" class="btn btn-primary w-100">
-                                                <i class="bi bi-plus-circle me-1"></i>Add
-                                            </button>
-                                        </div>
+                                        </form>
                                     </div>
-                                </form>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="table-responsive mb-4">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="table-filters">
+                                    <input type="text" id="tableSearch" class="form-control form-control-sm" placeholder="Search..." style="width: 200px;">
+                                </div>
+                                <div class="table-info">
+                                    <span id="resultCount" class="badge bg-primary">0</span> results
+                                </div>
+                            </div>
                             <table id="resultTable" class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="text-center" width="50">#</th>
-                                        <th>Name</th>
-                                        <th>Organization</th>
-                                        <th class="text-center" width="100">Actions</th>
+                                        <th class="text-center" width="60">#</th>
+                                        <th class="sortable" data-sort="name">Name <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="sortable" data-sort="organization">Organization <i class="bi bi-arrow-down-up sort-icon"></i></th>
+                                        <th class="text-center" width="80">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="resultBody">
                                     <!-- Results will be added here -->
                                 </tbody>
                             </table>
-                        </div>
-                        
-                        <div id="noResults" class="text-center py-4">
-                            <i class="bi bi-clipboard-data display-4 text-muted mb-3"></i>
-                            <p class="text-muted">No data extracted yet</p>
-                            <p class="text-muted small">Upload an image and click "Process Images" to extract data</p>
+                            <div id="noResults" style="display: block;">
+                                <p class="text-center text-muted">No data available. Upload and process an image to extract data.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
