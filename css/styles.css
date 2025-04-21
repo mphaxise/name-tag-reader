@@ -247,6 +247,33 @@ body {
     cursor: se-resize;
 }
 
+/* Accordion styling */
+.accordion-item {
+    border-radius: var(--border-radius) !important;
+    overflow: hidden;
+}
+
+.accordion-button {
+    font-weight: 500;
+    border-radius: var(--border-radius) !important;
+    padding: 1rem 1.25rem;
+}
+
+.accordion-button:not(.collapsed) {
+    color: var(--primary);
+    background-color: rgba(13, 110, 253, 0.05);
+    box-shadow: none;
+}
+
+.accordion-button:focus {
+    box-shadow: none;
+    border-color: rgba(13, 110, 253, 0.25);
+}
+
+.accordion-button::after {
+    transition: var(--transition);
+}
+
 /* Modal styling */
 .modal-content {
     border-radius: var(--border-radius);
