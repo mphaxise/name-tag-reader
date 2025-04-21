@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const exportCSV = document.getElementById('exportCSV');
     const exportJSON = document.getElementById('exportJSON');
     const manualEntryForm = document.getElementById('manualEntryForm');
-    const tableSearch = document.getElementById('tableSearch');
+
     
     // Event listeners
     imageUpload.addEventListener('change', handleImageUpload);
@@ -107,12 +107,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    // Add event listener for table filtering
-    if (tableSearch) {
-        tableSearch.addEventListener('input', (e) => {
-            handleTableFilter(e.target.value);
-        });
-    }
+
     
     // Initialize Tesseract worker
     try {
@@ -140,20 +135,28 @@ async function initTesseract() {
 // Handle image upload
 function handleImageUpload(event) {
     const files = event.target.files;
-    if (files.length === 0) return;
+    if (!files || files.length === 0) {
+        console.log('No files selected');
+        return;
+    }
+    
+    console.log(`${files.length} files selected`);
     
     // Clear existing images if not holding shift key during upload
     if (!event.shiftKey) {
         uploadedImages = [];
+        console.log('Cleared existing images');
     }
     
     // Add new files to uploadedImages array
     for (let i = 0; i < files.length; i++) {
         uploadedImages.push(files[i]);
+        console.log(`Added file: ${files[i].name}`);
     }
     
     // Reset current image index
     currentImageIndex = 0;
+    console.log('Reset current image index to 0');
     
     // Display the first image
     displayImage(uploadedImages[currentImageIndex]);
@@ -174,95 +177,61 @@ function handleImageUpload(event) {
 
 // Display image in preview area
 function displayImage(file) {
-    const imagePreview = document.getElementById('imagePreview');
-    const previewControls = imagePreview.querySelector('.preview-controls');
-    const imageCounter = imagePreview.querySelector('.image-counter');
-    const currentImageCountEl = document.getElementById('currentImageCount');
-    const totalImageCountEl = document.getElementById('totalImageCount');
+    console.log('displayImage called with file:', file ? file.name : 'null');
+    console.log('Current image index:', currentImageIndex);
+    console.log('Total uploaded images:', uploadedImages.length);
     
-    // Show loading indicator
-    const emptyPreview = imagePreview.querySelector('.empty-preview');
-    if (emptyPreview) {
-        emptyPreview.innerHTML = `
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading image...</p>
-        `;
-    } else {
-        // Create loading indicator if empty preview doesn't exist
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.className = 'text-center';
-        loadingIndicator.innerHTML = `
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Loading image...</p>
-        `;
-        
-        // Clear existing content and add loading indicator
-        imagePreview.innerHTML = '';
-        imagePreview.appendChild(loadingIndicator);
+    const imagePreview = document.getElementById('imagePreview');
+    if (!imagePreview) {
+        console.error('Image preview element not found');
+        return;
     }
+    
+    // Clear existing content
+    imagePreview.innerHTML = '';
     
     if (!file) {
         // No file provided, show empty state
-        imagePreview.innerHTML = `
-            <div class="empty-preview">
-                <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
-                <p class="text-muted">No image selected</p>
-            </div>
-            <div class="preview-controls d-none">
-                <button class="btn btn-sm btn-light" id="prevImageBtn">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-                <button class="btn btn-sm btn-light" id="nextImageBtn">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
-            </div>
-            <div class="image-counter d-none">
-                <span id="currentImageCount">1</span>/<span id="totalImageCount">1</span>
-            </div>
+        const emptyPreview = document.createElement('div');
+        emptyPreview.className = 'empty-preview';
+        emptyPreview.innerHTML = `
+            <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
+            <p class="text-muted">No image selected</p>
         `;
+        imagePreview.appendChild(emptyPreview);
+        
+        // Add hidden navigation controls
+        addNavigationControls(imagePreview, true);
         
         // Update process button state
         UIManager.updateProcessButtonState();
         return;
     }
     
+    // Show loading indicator first
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'text-center';
+    loadingIndicator.innerHTML = `
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading image...</p>
+    `;
+    imagePreview.appendChild(loadingIndicator);
+    
     // Create image object
     const img = new Image();
     
     // Set up onload handler
-    img.onload = function(e) {
-        // Clear loading indicator and show image
+    img.onload = function() {
+        // Clear loading indicator
         imagePreview.innerHTML = '';
+        
+        // Add the image
         imagePreview.appendChild(img);
         
-        // Add navigation controls back
-        const newPreviewControls = document.createElement('div');
-        newPreviewControls.className = 'preview-controls' + (uploadedImages.length > 1 ? '' : ' d-none');
-        newPreviewControls.innerHTML = `
-            <button class="btn btn-sm btn-light" id="prevImageBtn">
-                <i class="bi bi-chevron-left"></i>
-            </button>
-            <button class="btn btn-sm btn-light" id="nextImageBtn">
-                <i class="bi bi-chevron-right"></i>
-            </button>
-        `;
-        imagePreview.appendChild(newPreviewControls);
-        
-        // Add image counter
-        const newImageCounter = document.createElement('div');
-        newImageCounter.className = 'image-counter' + (uploadedImages.length > 1 ? '' : ' d-none');
-        newImageCounter.innerHTML = `
-            <span id="currentImageCount">${currentImageIndex + 1}</span>/<span id="totalImageCount">${uploadedImages.length}</span>
-        `;
-        imagePreview.appendChild(newImageCounter);
-        
-        // Add event listeners for navigation buttons
-        document.getElementById('prevImageBtn').addEventListener('click', navigateToPreviousImage);
-        document.getElementById('nextImageBtn').addEventListener('click', navigateToNextImage);
+        // Add navigation controls
+        addNavigationControls(imagePreview, false);
         
         // Update process button state
         UIManager.updateProcessButtonState();
@@ -273,39 +242,93 @@ function displayImage(file) {
     // Set up error handler
     img.onerror = function() {
         // Show error state
-        imagePreview.innerHTML = `
-            <div class="empty-preview">
-                <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
-                <p class="text-danger">Error loading image</p>
-            </div>
+        imagePreview.innerHTML = '';
+        
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'empty-preview';
+        errorDiv.innerHTML = `
+            <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
+            <p class="text-danger">Error loading image</p>
         `;
+        imagePreview.appendChild(errorDiv);
+        
+        // Add hidden navigation controls
+        addNavigationControls(imagePreview, true);
         
         console.error('Error loading image');
     };
     
     // Start loading the image
-    img.src = URL.createObjectURL(file);
-    img.alt = file.name || 'Uploaded image';
-    img.className = 'img-fluid';
+    try {
+        img.src = URL.createObjectURL(file);
+        img.alt = file.name || 'Uploaded image';
+        img.className = 'img-fluid';
+    } catch (error) {
+        console.error('Error creating object URL:', error);
+        img.onerror();
+    }
+}
+
+// Helper function to add navigation controls to the image preview
+function addNavigationControls(imagePreview, hidden) {
+    // Add navigation controls
+    const previewControls = document.createElement('div');
+    previewControls.className = 'preview-controls' + (hidden || uploadedImages.length <= 1 ? ' d-none' : '');
+    previewControls.innerHTML = `
+        <button class="btn btn-sm btn-light" id="prevImageBtn">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="btn btn-sm btn-light" id="nextImageBtn">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    `;
+    imagePreview.appendChild(previewControls);
+    
+    // Add image counter
+    const imageCounter = document.createElement('div');
+    imageCounter.className = 'image-counter' + (hidden || uploadedImages.length <= 1 ? ' d-none' : '');
+    imageCounter.innerHTML = `
+        <span id="currentImageCount">${currentImageIndex + 1}</span>/<span id="totalImageCount">${uploadedImages.length}</span>
+    `;
+    imagePreview.appendChild(imageCounter);
+    
+    // Add event listeners for navigation buttons
+    const prevBtn = document.getElementById('prevImageBtn');
+    const nextBtn = document.getElementById('nextImageBtn');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', navigateToPreviousImage);
+        nextBtn.addEventListener('click', navigateToNextImage);
+    }
 }
 
 // Navigate to previous image
 function navigateToPreviousImage(event) {
-    event.stopPropagation(); // Prevent event bubbling
+    if (event) event.stopPropagation(); // Prevent event bubbling
+    console.log('Navigate to previous image');
     
-    if (uploadedImages.length <= 1) return;
+    if (uploadedImages.length <= 1) {
+        console.log('Not enough images to navigate');
+        return;
+    }
     
     currentImageIndex = (currentImageIndex - 1 + uploadedImages.length) % uploadedImages.length;
+    console.log('New image index:', currentImageIndex);
     displayImage(uploadedImages[currentImageIndex]);
 }
 
 // Navigate to next image
 function navigateToNextImage(event) {
-    event.stopPropagation(); // Prevent event bubbling
+    if (event) event.stopPropagation(); // Prevent event bubbling
+    console.log('Navigate to next image');
     
-    if (uploadedImages.length <= 1) return;
+    if (uploadedImages.length <= 1) {
+        console.log('Not enough images to navigate');
+        return;
+    }
     
     currentImageIndex = (currentImageIndex + 1) % uploadedImages.length;
+    console.log('New image index:', currentImageIndex);
     displayImage(uploadedImages[currentImageIndex]);
 }
 
@@ -723,10 +746,9 @@ function parseOCRResult(text) {
     }
 }
 
-// Global variables for table sorting and filtering
+// Global variables for table sorting
 let currentSortField = null;
 let currentSortDirection = 'asc';
-let currentFilter = '';
 
 // Update the result table with extracted data
 function updateResultTable() {
@@ -758,17 +780,6 @@ function updateResultTable() {
             } else {
                 return valueB.localeCompare(valueA);
             }
-        });
-    }
-    
-    // Filter data if needed
-    if (currentFilter) {
-        const filterLower = currentFilter.toLowerCase();
-        displayData = displayData.filter(item => {
-            return (
-                (item.name && item.name.toLowerCase().includes(filterLower)) ||
-                (item.organization && item.organization.toLowerCase().includes(filterLower))
-            );
         });
     }
     
@@ -834,18 +845,12 @@ function handleTableSort(field) {
     updateResultTable();
 }
 
-// Handle table filtering
-function handleTableFilter(filterText) {
-    currentFilter = filterText.trim();
-    updateResultTable();
-}
 
-// Add tooltip to editable cells
+
 function addTooltipsToEditableCells() {
     document.querySelectorAll('.editable').forEach(cell => {
         cell.setAttribute('title', 'Click to edit');
     });
-}
 }
 
 // Make a cell editable
