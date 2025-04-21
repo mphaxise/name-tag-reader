@@ -162,17 +162,10 @@ function handleImageUpload(event) {
     // Display the first image
     displayImage(uploadedImages[currentImageIndex]);
     
-    // Force update navigation controls visibility
-    const imagePreview = document.getElementById('imagePreview');
-    if (imagePreview && uploadedImages.length > 1) {
-        const previewControls = imagePreview.querySelector('.preview-controls');
-        const imageCounter = imagePreview.querySelector('.image-counter');
-        
-        if (previewControls) previewControls.classList.remove('d-none');
-        if (imageCounter) imageCounter.classList.remove('d-none');
-        
-        console.log('Forced navigation controls to be visible');
-    }
+    // CRITICAL: Force add navigation controls directly to the DOM
+    setTimeout(() => {
+        addForcedNavigationControls();
+    }, 500);
     
     // Show notification with count of images
     if (files.length > 1) {
@@ -183,9 +176,70 @@ function handleImageUpload(event) {
     
     // Update process button state
     UIManager.updateProcessButtonState();
+}
+
+// Force add navigation controls regardless of conditions
+function addForcedNavigationControls() {
+    const imagePreview = document.getElementById('imagePreview');
+    if (!imagePreview) return;
     
-    // Show notification
-    showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully. Click "Process Images" to extract data.');
+    console.log('FORCING navigation controls to be added');
+    
+    // Remove any existing controls first
+    const existingControls = imagePreview.querySelector('.preview-controls');
+    const existingCounter = imagePreview.querySelector('.image-counter');
+    if (existingControls) existingControls.remove();
+    if (existingCounter) existingCounter.remove();
+    
+    // Create new controls
+    const previewControls = document.createElement('div');
+    previewControls.className = 'preview-controls';
+    previewControls.style.opacity = '1';
+    previewControls.style.display = 'flex';
+    previewControls.innerHTML = `
+        <button id="prevImageBtn" style="background: rgba(0,0,0,0.8); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 10px; font-size: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button id="nextImageBtn" style="background: rgba(0,0,0,0.8); color: white; border: none; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; margin: 0 10px; font-size: 1.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    `;
+    imagePreview.appendChild(previewControls);
+    
+    // Add image counter
+    const imageCounter = document.createElement('div');
+    imageCounter.className = 'image-counter';
+    imageCounter.style.opacity = '1';
+    imageCounter.style.display = 'block';
+    imageCounter.style.zIndex = '1000';
+    imageCounter.innerHTML = `
+        <span id="currentImageCount" style="font-weight: bold;">${currentImageIndex + 1}</span>/<span id="totalImageCount">${uploadedImages.length}</span>
+    `;
+    imagePreview.appendChild(imageCounter);
+    
+    console.log('Forced navigation controls added with inline styles');
+    
+    // Add event listeners for navigation buttons
+    const prevBtn = document.getElementById('prevImageBtn');
+    const nextBtn = document.getElementById('nextImageBtn');
+    
+    if (prevBtn && nextBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Previous button clicked');
+            navigateToPreviousImage();
+        });
+        
+        nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Next button clicked');
+            navigateToNextImage();
+        });
+        
+        console.log('Navigation button event listeners added with explicit event handling');
+    }
 }
 
 // Display image in preview area
@@ -243,20 +297,11 @@ function displayImage(file) {
         // Add the image
         imagePreview.appendChild(img);
         
-        // Add navigation controls - force them to be visible if we have multiple images
-        const forceVisible = uploadedImages.length > 1;
-        addNavigationControls(imagePreview, !forceVisible);
-        
-        // Double-check visibility of controls
-        if (forceVisible) {
+        // Force add navigation controls with inline styles
+        if (uploadedImages.length > 1) {
             setTimeout(() => {
-                const previewControls = imagePreview.querySelector('.preview-controls');
-                const imageCounter = imagePreview.querySelector('.image-counter');
-                
-                if (previewControls) previewControls.classList.remove('d-none');
-                if (imageCounter) imageCounter.classList.remove('d-none');
-                
-                console.log('Double-checked navigation controls visibility');
+                addForcedNavigationControls();
+                console.log('Added forced navigation controls after image load');
             }, 100);
         }
         
@@ -339,7 +384,10 @@ function addNavigationControls(imagePreview, hidden) {
 
 // Navigate to previous image
 function navigateToPreviousImage(event) {
-    if (event) event.stopPropagation(); // Prevent event bubbling
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation(); // Prevent event bubbling
+    }
     console.log('Navigate to previous image');
     
     if (uploadedImages.length <= 1) {
@@ -349,12 +397,23 @@ function navigateToPreviousImage(event) {
     
     currentImageIndex = (currentImageIndex - 1 + uploadedImages.length) % uploadedImages.length;
     console.log('New image index:', currentImageIndex);
+    
+    // Display the new image
     displayImage(uploadedImages[currentImageIndex]);
+    
+    // Force update navigation controls after a short delay
+    setTimeout(() => {
+        addForcedNavigationControls();
+        console.log('Updated navigation controls after previous navigation');
+    }, 100);
 }
 
 // Navigate to next image
 function navigateToNextImage(event) {
-    if (event) event.stopPropagation(); // Prevent event bubbling
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation(); // Prevent event bubbling
+    }
     console.log('Navigate to next image');
     
     if (uploadedImages.length <= 1) {
@@ -364,7 +423,15 @@ function navigateToNextImage(event) {
     
     currentImageIndex = (currentImageIndex + 1) % uploadedImages.length;
     console.log('New image index:', currentImageIndex);
+    
+    // Display the new image
     displayImage(uploadedImages[currentImageIndex]);
+    
+    // Force update navigation controls after a short delay
+    setTimeout(() => {
+        addForcedNavigationControls();
+        console.log('Updated navigation controls after next navigation');
+    }, 100);
 }
 
 // Process all uploaded images
