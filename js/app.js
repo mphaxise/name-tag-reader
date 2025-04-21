@@ -69,6 +69,13 @@ function handleImageUpload(event) {
     
     // Display the first image
     displayImage(uploadedImages[0]);
+    
+    // Force enable the process button using direct DOM manipulation
+    document.getElementById('processBtn').removeAttribute('disabled');
+    console.log('Process button enabled after file upload using direct DOM manipulation');
+    
+    // Show notification
+    showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully. Click "Process Images" to extract data.');
 }
 
 // Handle drag and drop functionality
@@ -132,6 +139,9 @@ function displayImage(file) {
     
     reader.onload = function(e) {
         imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="img-fluid shadow-sm">`;
+        // Force enable the process button using direct DOM manipulation
+        document.getElementById('processBtn').removeAttribute('disabled');
+        console.log('Process button enabled in displayImage function');
     };
     
     reader.readAsDataURL(file);
@@ -772,6 +782,7 @@ function capturePhoto() {
     const camera = document.getElementById('camera');
     const canvas = document.getElementById('imageCanvas');
     const ctx = canvas.getContext('2d');
+    const processBtn = document.getElementById('processBtn');
     
     // Set canvas dimensions to match video
     canvas.width = camera.videoWidth;
@@ -792,7 +803,14 @@ function capturePhoto() {
         // Display the image
         displayImage(file);
         
+        // Force enable the process button using direct DOM manipulation
+        document.getElementById('processBtn').removeAttribute('disabled');
+        console.log('Process button enabled after camera capture using direct DOM manipulation');
+        
         // Close camera
         closeCamera();
+        
+        // Show notification
+        showNotification('success', 'Photo Captured', 'Photo has been captured successfully. Click "Process Images" to extract data.');
     }, 'image/jpeg');
 }

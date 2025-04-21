@@ -1,7 +1,7 @@
 # Name Tag Reader
 
 ![Name Tag Reader](https://img.shields.io/badge/OCR-Tesseract.js-blue)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Version](https://img.shields.io/badge/version-1.0.1-green)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 A browser-based application that processes images containing name tags, extracts text using OCR technology, and outputs structured data in a table format. Perfect for event organizers, networking events, and conferences to quickly digitize attendee information from name tags.
@@ -49,6 +49,42 @@ Visit the [GitHub repository](https://github.com/mphaxise/name-tag-reader) to ac
    ```bash
    cd name-tag-reader
    ```
+
+## 🔄 Recent Updates (v1.0.1)
+
+### UI and Functionality Improvements
+- **Fixed Process Images Button**: Resolved issue where the Process Images button wasn't enabling after camera capture or image upload
+- **Enhanced User Experience**: Added success notifications after image upload and photo capture
+- **Improved Error Handling**: Better feedback when operations fail or no images are present
+- **Code Cleanup**: Removed redundant code and improved code organization
+
+### Technical Improvements
+- **MutationObserver Implementation**: Added a MutationObserver to reliably detect when images are added to the preview
+- **Direct DOM Manipulation**: Improved button state management using direct DOM manipulation
+- **Debug Logging**: Added console logging for better debugging and troubleshooting
+
+## 🧪 Testing
+
+The application includes a comprehensive testing suite to ensure functionality works as expected:
+
+### Automated Tests
+- Located in the `tests` directory
+- Tests for button enabling/disabling functionality
+- Tests for image upload and camera capture scenarios
+- Tests for multiple image handling
+
+### Manual Testing
+- A detailed manual test checklist is available in `tests/manual_test_checklist.md`
+- Covers UI responsiveness, browser compatibility, and error handling
+
+### Coverage Analysis
+- Code coverage analysis script available in `tests/coverage_analysis.js`
+- Tracks function calls, DOM access, and event listeners
+
+### Running Tests
+1. Navigate to the `tests` directory
+2. Open `browser-test-runner.html` in your browser
+3. Click the "Run Tests" button to execute all tests
 
 3. Open `index.html` in your web browser
 
