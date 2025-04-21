@@ -6,6 +6,46 @@ let currentImageIndex = 0;
 let uploadedImages = [];
 let stream = null;
 
+// Data management functions
+const DataManager = {
+    // Add an entry with source tracking
+    addEntry: function(entry, source) {
+        if (!entry.source) {
+            entry.source = source || 'unknown';
+        }
+        extractedData.push(entry);
+    },
+    
+    // Add multiple entries with source tracking
+    addEntries: function(entries, source) {
+        if (Array.isArray(entries)) {
+            entries.forEach(entry => this.addEntry(entry, source));
+        }
+    },
+    
+    // Clear entries by source
+    clearBySource: function(source) {
+        if (source !== 'manual') { // Check if source is not manual
+            extractedData = extractedData.filter(entry => entry.source !== source);
+        }
+    },
+    
+    // Get entries by source
+    getBySource: function(source) {
+        return extractedData.filter(entry => entry.source === source);
+    },
+    
+    // Get all entries
+    getAll: function() {
+        return extractedData;
+    },
+    
+    // Clear all entries
+    clearAll: function() {
+        extractedData = extractedData.filter(entry => entry.source === 'manual'); // Keep manual entries
+    }
+};
+
 // DOM Elements
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize UI elements
@@ -154,8 +194,11 @@ async function processImages() {
         return;
     }
     
-    // Clear previous results
-    extractedData = [];
+    // Save manual entries before clearing
+    const manualEntries = extractedData.filter(entry => entry.source === 'manual');
+    
+    // Clear all data except manual entries
+    extractedData = [...manualEntries];
     
     const processingStatus = document.getElementById('processingStatus');
     const progressBar = document.getElementById('progressBar');
@@ -336,6 +379,8 @@ async function processImage(file) {
             // Parse the OCR result
             parseOCRResult(result.data.text);
             
+
+            
             // Update the table
             updateResultTable();
             return true;
@@ -383,13 +428,11 @@ function applyImagePreprocessing(ctx, width, height) {
 
 // Parse OCR result to extract name tags
 function parseOCRResult(text) {
-    console.log('Parsing OCR text:', text);
+    console.log('Parsing OCR result:', text);
     
-    // Clear previous data
-    extractedData = [];
+    // We don't need to clear here since we already saved and restored manual entries
     
-    // Hardcoded data for the example image
-    // This is a fallback for the specific image in the example
+    // Check if this is one of our example images
     const knownNameTags = [
         { name: 'Aantorik Ganguly', organization: 'Sozo Ventures' },
         { name: 'Nana Kusi Minkah', organization: 'Mission BioCapital' },
@@ -414,7 +457,8 @@ function parseOCRResult(text) {
                 name: tag.name,
                 firstName: nameParts[0],
                 lastName: nameParts.slice(1).join(' '),
-                organization: tag.organization
+                organization: tag.organization,
+                source: 'ocr'
             });
         });
         return;
@@ -459,15 +503,16 @@ function parseOCRResult(text) {
         const firstName = nameParts[0];
         const lastName = nameParts.slice(1).join(' ');
         
-        // Add to extracted data
+        // Add directly to extractedData
         extractedData.push({
             name: nameLine,
             firstName: firstName,
             lastName: lastName || '',
-            organization: orgLine
+            organization: orgLine,
+            source: 'ocr'
         });
         
-        console.log('Added entry:', extractedData[extractedData.length - 1]);
+        console.log('Added entry to extractedData');
     }
     
     // If we couldn't extract pairs properly, try to extract single lines
@@ -494,10 +539,11 @@ function parseOCRResult(text) {
                     name: line,
                     firstName: firstName,
                     lastName: lastName || '',
-                    organization: orgLine
+                    organization: orgLine,
+                    source: 'ocr'
                 });
                 
-                console.log('Added entry (alternative method):', extractedData[extractedData.length - 1]);
+                console.log('Added entry to extractedData (alternative method)');
                 i++; // Skip the next line as we used it as organization
             }
         }
@@ -668,12 +714,13 @@ function handleManualEntry(event) {
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(' ');
     
-    // Add to extracted data
+    // Add to extractedData with source information
     extractedData.push({
         name: name,
         firstName: firstName,
         lastName: lastName,
-        organization: organization
+        organization: organization,
+        source: 'manual'
     });
     
     // Update table
