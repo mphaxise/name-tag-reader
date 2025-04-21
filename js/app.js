@@ -100,9 +100,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     exportJSON.addEventListener('click', () => downloadData('json'));
     manualEntryForm.addEventListener('submit', handleManualEntry);
     
-    // Add event listeners for table sorting
+    console.log('Setting up table sorting event listeners');
     document.querySelectorAll('th.sortable').forEach(th => {
         th.addEventListener('click', () => {
+            console.log('Sort header clicked:', th.dataset.sort);
             handleTableSort(th.dataset.sort);
         });
     });
@@ -692,6 +693,7 @@ function updateResultTable() {
     let displayData = [...extractedData];
     
     if (currentSortField) {
+        console.log('Sorting data by field:', currentSortField, 'Direction:', currentSortDirection);
         displayData.sort((a, b) => {
             const valueA = (a[currentSortField] || '').toLowerCase();
             const valueB = (b[currentSortField] || '').toLowerCase();
@@ -702,6 +704,7 @@ function updateResultTable() {
                 return valueB.localeCompare(valueA);
             }
         });
+        console.log('Data sorted, first item:', displayData[0]);
     }
     
     // Add rows for each extracted item
@@ -743,12 +746,16 @@ function updateResultTable() {
 
 // Handle table sorting
 function handleTableSort(field) {
+    console.log('Sorting table by field:', field, 'Current sort field:', currentSortField);
+    
     // If clicking the same field, toggle direction
     if (field === currentSortField) {
         currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+        console.log('Toggled sort direction to:', currentSortDirection);
     } else {
         currentSortField = field;
         currentSortDirection = 'asc';
+        console.log('Set new sort field and direction:', field, currentSortDirection);
     }
     
     // Update sort indicators in the UI
@@ -756,6 +763,7 @@ function handleTableSort(field) {
         th.classList.remove('sort-asc', 'sort-desc');
         if (th.dataset.sort === currentSortField) {
             th.classList.add(currentSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+            console.log('Updated sort indicator for:', th.dataset.sort);
         }
     });
     
