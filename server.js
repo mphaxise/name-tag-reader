@@ -19,12 +19,12 @@ app.use(
   helmet.contentSecurityPolicy({
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "https://unpkg.com/", "https://cdn.jsdelivr.net/", "blob:"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net", "unpkg.com", "https://unpkg.com", "https://cdn.jsdelivr.net", "blob:", "https://tessdata.projectnaptha.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "fonts.googleapis.com"],
       imgSrc: ["'self'", "data:", "blob:"],
       fontSrc: ["'self'", "fonts.googleapis.com", "fonts.gstatic.com"],
-      connectSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net/", "https://unpkg.com/"],
-      workerSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net/", "https://unpkg.com/"],
+      connectSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://tessdata.projectnaptha.com"],
+      workerSrc: ["'self'", "blob:", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://tessdata.projectnaptha.com"],
       childSrc: ["'self'", "blob:"],
       frameSrc: ["'self'"],
       // Add a nonce for the inline scripts if needed in the future
