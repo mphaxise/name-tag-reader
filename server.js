@@ -14,22 +14,21 @@ const PORT = process.env.PORT || 8080;
 // Apply middleware
 app.use(compression()); // Compress responses
 app.use(cors()); // Enable CORS for all routes
-// Disable helmet for local development to avoid CSP issues
-// In production, you would want to configure this properly
+// Configure helmet with a more permissive Content Security Policy for cloud deployment
 app.use(
   helmet.contentSecurityPolicy({
     directives: {
-      defaultSrc: ["'self'", "*"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "*"],
-      styleSrc: ["'self'", "'unsafe-inline'", "*"],
-      imgSrc: ["'self'", "data:", "blob:", "*"],
-      fontSrc: ["'self'", "*"],
-      connectSrc: ["'self'", "blob:", "*"],
-      frameSrc: ["'self'", "*"],
-      objectSrc: ["'self'", "*"],
-      mediaSrc: ["'self'", "*"],
-      workerSrc: ["'self'", "blob:", "*"],
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "'unsafe-inline'", "cdn.jsdelivr.net", "fonts.googleapis.com"],
+      imgSrc: ["'self'", "data:", "blob:"],
+      fontSrc: ["'self'", "fonts.googleapis.com", "fonts.gstatic.com"],
+      connectSrc: ["'self'", "blob:"],
+      // Add a nonce for the inline scripts if needed in the future
+      // For now, we're using 'unsafe-inline' which is less secure but necessary for this application
     },
+    // This is important for Render.com deployment
+    reportOnly: false
   })
 ); // Set security headers
 
