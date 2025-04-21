@@ -2,12 +2,11 @@
 
 :root {
     /* Main colors from the provided design */
-    --primary: #1a7d74; /* Teal/turquoise color */
-    --primary-dark: #156960;
-    --primary-light: #a3d5d1; /* Lighter teal for backgrounds */
-    --accent: #e67e22; /* Orange/coral color for buttons */
-    --accent-dark: #d35400;
-    --accent-light: #f39c12;
+    --primary: #8ecfd1; /* Light teal color for header */
+    --primary-dark: #002B2E; /* Dark greenish color for text */
+    --primary-light: #e5f5f5; /* Lighter teal for backgrounds */
+    --accent-orange: #f57c2b; /* Orange color for primary buttons */
+    --accent-yellow: #f9d762; /* Yellow color for secondary buttons */
     
     /* Standard colors */
     --secondary: #6c757d;
@@ -20,6 +19,7 @@
     
     /* UI elements */
     --border-radius: 0.5rem;
+    --button-radius: 999px; /* Rounded button style */
     --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
     --transition: all 0.3s ease;
 }
@@ -27,27 +27,54 @@
 body {
     background-color: var(--primary-light);
     font-family: 'Poppins', sans-serif;
-    color: #333;
+    color: var(--primary-dark);
     line-height: 1.6;
+}
+
+/* Card header styling */
+.card-header {
+    background-color: transparent;
+    border-bottom: none;
+    padding: 1.5rem 1.5rem 0.5rem;
+}
+
+.card-title {
+    font-weight: 600;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* Section title styling */
+.section-title {
+    font-family: serif;
+    color: #f57c2b;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 60px 0 20px;
 }
 
 /* Navbar styling */
 .navbar {
     background-color: var(--primary) !important;
+    padding: 12px 24px;
 }
 
 .navbar-brand {
     font-weight: 600;
     letter-spacing: 0.5px;
-    color: white !important;
+    color: var(--primary-dark) !important;
 }
 
 .nav-link {
-    color: rgba(255, 255, 255, 0.85) !important;
+    color: var(--primary-dark) !important;
+    font-weight: 500;
+    font-size: 16px;
+    margin: 0 16px;
 }
 
 .nav-link:hover {
-    color: white !important;
+    text-decoration: underline;
 }
 
 /* Card styling */
@@ -87,73 +114,90 @@ body {
 
 /* Button styling */
 .btn {
-    border-radius: 0.4rem;
-    padding: 0.5rem 1rem;
-    font-weight: 500;
+    border-radius: var(--button-radius);
+    padding: 10px 18px;
+    font-weight: bold;
+    font-size: 14px;
+    transition: var(--transition);
+    border: 2px solid #000;
+}
+
+/* CTA Button styling */
+.cta-button {
+    background-color: #12705f;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 14px 28px;
+    border-radius: 32px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
     transition: var(--transition);
 }
 
+.cta-button:hover {
+    background-color: #0f5a4b;
+}
+
 .btn-lg {
-    padding: 0.75rem 1.5rem;
+    padding: 12px 24px;
+    font-size: 16px;
 }
 
-/* Primary buttons - Teal */
-.btn-primary {
-    background-color: var(--primary);
-    border-color: var(--primary);
-    color: white;
+/* Primary buttons - Orange */
+.btn-primary, 
+.btn-success {
+    background-color: var(--accent-orange);
+    border-color: #000;
+    color: #000;
 }
 
-.btn-primary:hover {
-    background-color: var(--primary-dark);
-    border-color: var(--primary-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(26, 125, 116, 0.3);
+.btn-primary:hover,
+.btn-success:hover {
+    opacity: 0.9;
+    background-color: var(--accent-orange);
+    border-color: #000;
+    color: #000;
 }
 
+/* Secondary buttons - Yellow */
+.btn-secondary,
+.btn-info {
+    background-color: var(--accent-yellow);
+    border-color: #000;
+    color: #000;
+}
+
+.btn-secondary:hover,
+.btn-info:hover {
+    opacity: 0.9;
+    background-color: var(--accent-yellow);
+    border-color: #000;
+    color: #000;
+}
+
+/* Outline buttons */
 .btn-outline-primary {
-    border-color: var(--primary);
-    color: var(--primary);
+    border-color: #000;
+    background-color: transparent;
+    color: var(--primary-dark);
 }
 
 .btn-outline-primary:hover {
-    background-color: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(26, 125, 116, 0.2);
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--primary-dark);
+    opacity: 0.9;
 }
 
-/* Success buttons - Orange/Coral */
-.btn-success {
-    background-color: var(--accent);
-    border-color: var(--accent);
+/* Danger buttons */
+.btn-danger {
+    background-color: #dc3545;
     color: white;
 }
 
-.btn-success:hover {
-    background-color: var(--accent-dark);
-    border-color: var(--accent-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
-}
-
-/* Info buttons */
-.btn-info {
-    background-color: var(--accent-light);
-    border-color: var(--accent-light);
-    color: white;
-}
-
-.btn-info:hover {
-    background-color: var(--accent);
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
-}
-
-/* Other buttons */
 .btn-danger:hover {
-    transform: translateY(-2px);
+    opacity: 0.9;
 }
 
 /* Image preview styling */
@@ -358,15 +402,22 @@ body {
 footer {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
     background-color: var(--primary);
-    color: white;
+    color: var(--primary-dark);
+    padding: 12px 24px;
 }
 
 footer .text-muted {
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: var(--primary-dark) !important;
 }
 
 footer a {
-    color: white !important;
+    color: var(--primary-dark) !important;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+footer a:hover {
+    text-decoration: underline;
 }
 
 /* Responsive adjustments */
