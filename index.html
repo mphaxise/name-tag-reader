@@ -65,47 +65,31 @@
             color: #6c757d;
             padding: 2rem;
         }
-        .preview-controls {
-            position: absolute;
-            bottom: 10px;
-            left: 0;
-            right: 0;
-            padding: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            opacity: 1;
-            z-index: 100;
-        }
-        .preview-controls button {
-            background: rgba(0,0,0,0.7);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
+        #imagePreview {
+            width: 100%;
+            min-height: 250px;
+            border: 1px solid #ddd;
+            border-radius: 0.5rem;
+            margin: 20px 0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 10px;
-            font-size: 1.2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            overflow: hidden;
+            background-color: #f9f9f9;
+            position: relative;
+            transition: all 0.3s ease;
         }
-        .preview-controls button:hover {
-            background: rgba(0,0,0,0.9);
-            transform: scale(1.1);
+        #imagePreview:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
         }
-        .image-counter {
-            color: white;
-            font-size: 1rem;
-            font-weight: bold;
-            padding: 0.5rem 0.75rem;
-            background: rgba(0,0,0,0.8);
-            border-radius: 1rem;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 100;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        #imagePreview img {
+            max-width: 100%;
+            max-height: 350px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        #imagePreview:hover img {
+            transform: scale(1.02);
         }
         .table th {
             font-weight: 600;
@@ -280,11 +264,7 @@
                         </div>
                         
                         <div class="table-responsive mb-4">
-                            <div class="d-flex justify-content-end align-items-center mb-2">
-                                <div class="table-info">
-                                    <span id="resultCount" class="badge bg-primary">0</span> results
-                                </div>
-                            </div>
+
                             <table id="resultTable" class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
