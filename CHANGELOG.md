@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Process Images button now properly enables after camera capture
 - Process Images button now properly enables after file upload
 - Fixed race conditions in button state management
+- Fixed bug where manual entries were lost when processing images
 
 ### Added
 - MutationObserver to reliably detect when images are added to the preview
