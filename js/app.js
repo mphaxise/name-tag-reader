@@ -71,13 +71,67 @@ function handleImageUpload(event) {
     displayImage(uploadedImages[0]);
 }
 
+// Handle drag and drop functionality
+document.addEventListener('DOMContentLoaded', () => {
+    const uploadArea = document.querySelector('.upload-area');
+    
+    if (uploadArea) {
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        // Highlight drop area when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            uploadArea.classList.add('border-primary');
+            uploadArea.style.backgroundColor = 'rgba(13, 110, 253, 0.05)';
+        }
+        
+        function unhighlight() {
+            uploadArea.classList.remove('border-primary');
+            uploadArea.style.backgroundColor = '';
+        }
+        
+        // Handle dropped files
+        uploadArea.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            
+            if (files.length > 0) {
+                document.getElementById('imageUpload').files = files;
+                handleImageUpload({ target: { files } });
+            }
+        }
+        
+        // Handle click on upload area
+        uploadArea.addEventListener('click', () => {
+            document.getElementById('imageUpload').click();
+        });
+    }
+});
+
 // Display image in preview area
 function displayImage(file) {
     const imagePreview = document.getElementById('imagePreview');
     const reader = new FileReader();
     
     reader.onload = function(e) {
-        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
+        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="img-fluid shadow-sm">`;
     };
     
     reader.readAsDataURL(file);
@@ -86,7 +140,7 @@ function displayImage(file) {
 // Process all uploaded images
 async function processImages() {
     if (uploadedImages.length === 0) {
-        alert('Please upload at least one image first.');
+        showNotification('error', 'No Images', 'Please upload at least one image first.');
         return;
     }
     
@@ -108,7 +162,7 @@ async function processImages() {
             // Update progress
             const progress = Math.round((i / uploadedImages.length) * 50); // First half of progress bar
             progressBar.style.width = `${progress}%`;
-            statusText.textContent = `Processing image ${i+1} of ${uploadedImages.length}...`;
+            statusText.innerHTML = `<i class="bi bi-cpu me-2"></i>Processing image ${i+1} of ${uploadedImages.length}...`;
             
             // Process the image
             await processImage(uploadedImages[i]);
@@ -116,17 +170,109 @@ async function processImages() {
         
         // Complete
         progressBar.style.width = '100%';
-        statusText.textContent = 'Processing complete!';
+        statusText.innerHTML = '<i class="bi bi-check-circle me-2"></i>Processing complete!';
+        
+        // Show success modal
+        if (extractedData.length > 0) {
+            showResultModal('success');
+        } else {
+            showResultModal('empty');
+        }
         
     } catch (error) {
         console.error('Error in batch processing:', error);
-        statusText.textContent = 'Error processing images.';
+        statusText.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Error processing images.';
+        showResultModal('error');
     } finally {
         // Hide progress after a delay
         setTimeout(() => {
             processingStatus.classList.add('d-none');
         }, 2000);
     }
+}
+
+// Show result modal
+function showResultModal(type) {
+    const modal = new bootstrap.Modal(document.getElementById('resultModal'));
+    const modalTitle = document.getElementById('resultModalTitle');
+    const modalBody = document.getElementById('resultModalBody');
+    
+    if (type === 'success') {
+        modalTitle.textContent = 'Processing Complete';
+        modalBody.innerHTML = `
+            <i class="bi bi-check-circle-fill text-success display-1 mb-3"></i>
+            <p class="lead">Data extraction successful!</p>
+            <p>${extractedData.length} entries have been added to the table.</p>
+        `;
+    } else if (type === 'empty') {
+        modalTitle.textContent = 'No Data Found';
+        modalBody.innerHTML = `
+            <i class="bi bi-info-circle-fill text-info display-1 mb-3"></i>
+            <p class="lead">No data could be extracted</p>
+            <p>Try uploading a clearer image or use the manual entry form.</p>
+        `;
+    } else if (type === 'error') {
+        modalTitle.textContent = 'Processing Error';
+        modalBody.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill text-danger display-1 mb-3"></i>
+            <p class="lead">An error occurred during processing</p>
+            <p>Please try again with a different image or check the console for details.</p>
+        `;
+    }
+    
+    modal.show();
+}
+
+// Show notification
+function showNotification(type, title, message) {
+    const icons = {
+        success: 'bi-check-circle-fill',
+        error: 'bi-exclamation-triangle-fill',
+        info: 'bi-info-circle-fill',
+        warning: 'bi-exclamation-circle-fill'
+    };
+    
+    const colors = {
+        success: 'success',
+        error: 'danger',
+        info: 'info',
+        warning: 'warning'
+    };
+    
+    const icon = icons[type] || icons.info;
+    const color = colors[type] || colors.info;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${color} border-0`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
+    toast.setAttribute('aria-atomic', 'true');
+    
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi ${icon} me-2"></i>
+                <strong>${title}:</strong> ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Add to document
+    const toastContainer = document.createElement('div');
+    toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+    toastContainer.style.zIndex = '1050';
+    toastContainer.appendChild(toast);
+    document.body.appendChild(toastContainer);
+    
+    // Initialize and show the toast
+    const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
+    bsToast.show();
+    
+    // Remove from DOM after hidden
+    toast.addEventListener('hidden.bs.toast', () => {
+        document.body.removeChild(toastContainer);
+    });
 }
 
 // Process a single image with OCR
@@ -403,12 +549,12 @@ function updateResultTable() {
         const row = document.createElement('tr');
         
         row.innerHTML = `
-            <td>${index + 1}</td>
+            <td class="text-center">${index + 1}</td>
             <td class="editable" data-field="name" data-index="${index}">${item.name}</td>
             <td class="editable" data-field="organization" data-index="${index}">${item.organization}</td>
-            <td>
-                <button class="btn btn-sm btn-danger delete-btn" data-index="${index}">
-                    Remove
+            <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger delete-btn" data-index="${index}">
+                    <i class="bi bi-trash"></i>
                 </button>
             </td>
         `;
@@ -424,6 +570,11 @@ function updateResultTable() {
     // Add event listeners for delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', deleteRow);
+    });
+    
+    // Add tooltip to editable cells
+    document.querySelectorAll('.editable').forEach(cell => {
+        cell.setAttribute('title', 'Click to edit');
     });
 }
 
@@ -473,11 +624,17 @@ function saveEdit(cell, value, field, index) {
 function deleteRow(event) {
     const index = parseInt(event.currentTarget.dataset.index);
     
-    // Remove from data
-    extractedData.splice(index, 1);
-    
-    // Update table
-    updateResultTable();
+    // Confirm deletion
+    if (confirm('Are you sure you want to remove this entry?')) {
+        // Remove from data
+        extractedData.splice(index, 1);
+        
+        // Update table
+        updateResultTable();
+        
+        // Show notification
+        showNotification('info', 'Entry Removed', 'The entry has been removed from the table.');
+    }
 }
 
 // Handle manual entry form submission
@@ -491,7 +648,8 @@ function handleManualEntry(event) {
     const organization = orgInput.value.trim();
     
     if (name === '') {
-        alert('Please enter a name');
+        showNotification('warning', 'Missing Information', 'Please enter a name');
+        nameInput.focus();
         return;
     }
     
@@ -514,6 +672,12 @@ function handleManualEntry(event) {
     // Clear form
     nameInput.value = '';
     orgInput.value = '';
+    
+    // Show notification
+    showNotification('success', 'Entry Added', 'The entry has been added to the table.');
+    
+    // Scroll to the table
+    document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Download data as CSV or JSON

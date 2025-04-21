@@ -1,96 +1,193 @@
 /* Custom styles for Name Tag Reader */
 
-body {
-    background-color: #f8f9fa;
+:root {
+    --primary: #0d6efd;
+    --primary-dark: #0b5ed7;
+    --secondary: #6c757d;
+    --success: #198754;
+    --info: #0dcaf0;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #212529;
+    --border-radius: 0.5rem;
+    --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s ease;
 }
 
+body {
+    background-color: #f8f9fa;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Navbar styling */
+.navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Card styling */
 .card {
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+    border-radius: var(--border-radius);
+    transition: var(--transition);
+    overflow: hidden;
+}
+
+.card-header {
+    border-bottom: none;
+    background-color: transparent;
+    padding-bottom: 0;
+}
+
+.card-title {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Upload area styling */
+.upload-area {
+    border-radius: var(--border-radius);
+    border-color: #dee2e6 !important;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.upload-area:hover {
+    background-color: rgba(13, 110, 253, 0.03);
+    border-color: var(--primary) !important;
+}
+
+.border-dashed {
+    border-style: dashed !important;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 0.4rem;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.1);
+}
+
+.btn-success:hover, .btn-info:hover, .btn-danger:hover {
+    transform: translateY(-2px);
+}
+
+/* Image preview styling */
+.preview-container {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.empty-preview {
+    padding: 2rem;
 }
 
 #imagePreview img {
     max-width: 100%;
     max-height: 300px;
-    margin-bottom: 15px;
+    border-radius: 0.3rem;
+    box-shadow: var(--box-shadow);
 }
 
-.table-responsive {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.editable {
-    cursor: pointer;
-    padding: 2px 5px;
-    border-radius: 3px;
-}
-
-.editable:hover {
-    background-color: #f0f0f0;
-}
-
-.editing {
-    padding: 0;
-}
-
-.editing input {
-    width: 100%;
-    padding: 2px 5px;
-    border: 1px solid #007bff;
-    border-radius: 3px;
-}
-
-#cameraContainer {
-    position: relative;
+/* Camera container styling */
+.camera-container {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    background-color: #000;
 }
 
 #camera {
     width: 100%;
-    border-radius: 5px;
-    border: 1px solid #ddd;
+    border-radius: 0;
+    border: none;
 }
 
-.crop-overlay {
-    position: absolute;
-    border: 2px dashed #ff0000;
-    background-color: rgba(255, 0, 0, 0.1);
-    cursor: move;
+.camera-controls {
+    padding: 0.5rem;
+    background-color: rgba(0, 0, 0, 0.8);
 }
 
-.resize-handle {
-    width: 10px;
-    height: 10px;
-    background-color: #fff;
-    border: 1px solid #ff0000;
-    position: absolute;
-    border-radius: 50%;
+/* Table styling */
+.table-responsive {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 0.3rem;
 }
 
-.resize-handle.nw {
-    top: -5px;
-    left: -5px;
-    cursor: nw-resize;
+.table {
+    margin-bottom: 0;
 }
 
-.resize-handle.ne {
-    top: -5px;
-    right: -5px;
-    cursor: ne-resize;
+.table th {
+    font-weight: 600;
+    color: #555;
 }
 
-.resize-handle.sw {
-    bottom: -5px;
-    left: -5px;
-    cursor: sw-resize;
+.table td {
+    vertical-align: middle;
 }
 
-.resize-handle.se {
-    bottom: -5px;
-    right: -5px;
-    cursor: se-resize;
+/* Editable cells */
+.editable {
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.3rem;
+    transition: var(--transition);
 }
 
+.editable:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.editing {
+    padding: 0 !important;
+}
+
+.editing input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 2px solid var(--primary);
+    border-radius: 0.3rem;
+    outline: none;
+}
+
+/* Progress bar */
+.progress {
+    border-radius: 1rem;
+    overflow: hidden;
+    background-color: #e9ecef;
+}
+
+/* Animation */
 .badge-processing {
     animation: pulse 1.5s infinite;
 }
@@ -104,5 +201,84 @@ body {
     }
     100% {
         opacity: 0.6;
+    }
+}
+
+/* Crop overlay */
+.crop-overlay {
+    position: absolute;
+    border: 2px dashed var(--primary);
+    background-color: rgba(13, 110, 253, 0.1);
+    cursor: move;
+    border-radius: 0.3rem;
+}
+
+.resize-handle {
+    width: 12px;
+    height: 12px;
+    background-color: #fff;
+    border: 2px solid var(--primary);
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.resize-handle.nw {
+    top: -6px;
+    left: -6px;
+    cursor: nw-resize;
+}
+
+.resize-handle.ne {
+    top: -6px;
+    right: -6px;
+    cursor: ne-resize;
+}
+
+.resize-handle.sw {
+    bottom: -6px;
+    left: -6px;
+    cursor: sw-resize;
+}
+
+.resize-handle.se {
+    bottom: -6px;
+    right: -6px;
+    cursor: se-resize;
+}
+
+/* Modal styling */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Footer */
+footer {
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1.25rem;
+    }
+    
+    .preview-container {
+        min-height: 150px;
     }
 }
