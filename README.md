@@ -1,7 +1,7 @@
 # Name Tag Reader
 
 ![Name Tag Reader](https://img.shields.io/badge/OCR-Tesseract.js-blue)
-![Version](https://img.shields.io/badge/version-1.0.1-green)
+![Version](https://img.shields.io/badge/version-1.0.2-green)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 A browser-based application that processes images containing name tags, extracts text using OCR technology, and outputs structured data in a table format. Perfect for event organizers, networking events, and conferences to quickly digitize attendee information from name tags.
@@ -19,9 +19,9 @@ A browser-based application that processes images containing name tags, extracts
   - Special handling for name tag formats
 
 - **📊 Data Management**
-  - Structured table with Number, Name, and Organization
+  - Clean, simplified table with Number, Name, and Organization
   - Inline editing for quick corrections
-  - Manual entry option when OCR fails
+  - Manual entry option via convenient accordion interface
   - Export to CSV or JSON formats
 
 ## 🚀 Live Demo
@@ -50,18 +50,20 @@ Visit the [GitHub repository](https://github.com/mphaxise/name-tag-reader) to ac
    cd name-tag-reader
    ```
 
-## 🔄 Recent Updates (v1.0.1)
+## 🔄 Recent Updates (v1.0.2)
 
 ### UI and Functionality Improvements
-- **Fixed Process Images Button**: Resolved issue where the Process Images button wasn't enabling after camera capture or image upload
-- **Enhanced User Experience**: Added success notifications after image upload and photo capture
-- **Improved Error Handling**: Better feedback when operations fail or no images are present
-- **Code Cleanup**: Removed redundant code and improved code organization
+- **Simplified Image Handling**: Removed multi-image navigation controls for a more streamlined experience
+- **Improved Image Preview**: Enhanced image preview with subtle hover effects and better scaling
+- **Removed Table Filtering/Sorting**: Simplified the results table by removing filtering and sorting functionality
+- **Cleaner Table Display**: Removed unnecessary UI elements like the results counter
+- **Manual Entry Accordion**: Converted the manual entry form into an accordion for a cleaner UI
 
 ### Technical Improvements
-- **MutationObserver Implementation**: Added a MutationObserver to reliably detect when images are added to the preview
-- **Direct DOM Manipulation**: Improved button state management using direct DOM manipulation
-- **Debug Logging**: Added console logging for better debugging and troubleshooting
+- **Reduced Code Complexity**: Eliminated approximately 300 lines of unnecessary navigation and filtering code
+- **Improved Error Handling**: Added more robust checks for DOM elements and better error feedback
+- **Enhanced Logging**: Added detailed logging for better debugging and troubleshooting
+- **Simplified Event Handling**: Streamlined event listeners and reduced potential for event-related bugs
 
 ## 🧪 Testing
 
