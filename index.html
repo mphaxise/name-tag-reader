@@ -269,7 +269,7 @@
                     </div>
                     <div class="card-body">
                         <div class="text-center p-4" id="uploadArea">
-                            <input type="file" id="imageUpload" accept="image/*" multiple class="d-none" onchange="updateUploadStatus(this.files)">
+                            <input type="file" id="imageUpload" accept="image/*" multiple class="d-none">
                             <h5 class="mb-3">Upload Name Tag Images</h5>
                             <p class="text-muted mb-4">Supported formats: JPG, PNG, GIF</p>
                             <div class="d-flex gap-3 justify-content-center">
@@ -504,6 +504,9 @@
             
             uploadedImages = Array.from(files);
             currentImageIndex = 0;
+            
+            // Update the upload status badge
+            updateUploadStatus(files);
             
             // Display the first image
             displayImage(uploadedImages[0]);
