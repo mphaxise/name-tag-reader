@@ -5,6 +5,27 @@ All notable changes to the Name Tag Reader project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-04-21
+
+### Fixed
+- Completely rewrote image preview functionality for improved reliability
+- Fixed OCR processing workflow to handle errors gracefully
+- Fixed issues with the process button state management
+- Improved camera capture functionality with better error handling
+
+### Added
+- Comprehensive test suite with unit and integration tests
+- Enhanced code coverage analysis tool with visual reporting
+- Detailed test documentation in test_improvements.md
+- Improved error handling and user feedback throughout the application
+- Better image preprocessing for more accurate OCR results
+
+### Changed
+- Simplified application architecture for better maintainability
+- Improved UI with more intuitive controls and feedback
+- Enhanced manual entry form with better validation
+- Optimized export functionality for CSV and JSON formats
+
 ## [1.0.1] - 2025-04-21
 
 ### Fixed

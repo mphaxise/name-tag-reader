@@ -1,6 +1,6 @@
 {
   "name": "nametag-reader",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A web application that processes images containing name tags, extracts text using OCR, and outputs structured data in a table format.",
   "main": "index.html",
   "scripts": {
