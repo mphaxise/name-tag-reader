@@ -5,6 +5,25 @@ All notable changes to the Name Tag Reader project will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-04-21
+
+### Fixed
+- Fixed Tesseract.js initialization issues on both desktop and mobile devices
+- Improved Content Security Policy to properly support Tesseract.js worker scripts
+- Fixed image upload status badge not updating in cloud environment
+- Enhanced error handling for OCR processing with better user feedback
+
+### Added
+- Visual feedback during Tesseract initialization and image processing
+- Retry mechanism for failed Tesseract initialization
+- Mobile-friendly error messages with automatic dismissal
+- Detailed logging for better debugging in cloud environments
+
+### Changed
+- Updated Tesseract.js loading to use more reliable CDN sources
+- Improved resource cleanup after image processing
+- Enhanced user interface feedback during OCR processing
+
 ## [1.1.0] - 2025-04-21
 
 ### Fixed
