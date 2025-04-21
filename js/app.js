@@ -157,9 +157,22 @@ function handleImageUpload(event) {
     // Reset current image index
     currentImageIndex = 0;
     console.log('Reset current image index to 0');
+    console.log('Total uploaded images after adding:', uploadedImages.length);
     
     // Display the first image
     displayImage(uploadedImages[currentImageIndex]);
+    
+    // Force update navigation controls visibility
+    const imagePreview = document.getElementById('imagePreview');
+    if (imagePreview && uploadedImages.length > 1) {
+        const previewControls = imagePreview.querySelector('.preview-controls');
+        const imageCounter = imagePreview.querySelector('.image-counter');
+        
+        if (previewControls) previewControls.classList.remove('d-none');
+        if (imageCounter) imageCounter.classList.remove('d-none');
+        
+        console.log('Forced navigation controls to be visible');
+    }
     
     // Show notification with count of images
     if (files.length > 1) {
@@ -230,8 +243,22 @@ function displayImage(file) {
         // Add the image
         imagePreview.appendChild(img);
         
-        // Add navigation controls
-        addNavigationControls(imagePreview, false);
+        // Add navigation controls - force them to be visible if we have multiple images
+        const forceVisible = uploadedImages.length > 1;
+        addNavigationControls(imagePreview, !forceVisible);
+        
+        // Double-check visibility of controls
+        if (forceVisible) {
+            setTimeout(() => {
+                const previewControls = imagePreview.querySelector('.preview-controls');
+                const imageCounter = imagePreview.querySelector('.image-counter');
+                
+                if (previewControls) previewControls.classList.remove('d-none');
+                if (imageCounter) imageCounter.classList.remove('d-none');
+                
+                console.log('Double-checked navigation controls visibility');
+            }, 100);
+        }
         
         // Update process button state
         UIManager.updateProcessButtonState();
@@ -271,9 +298,12 @@ function displayImage(file) {
 
 // Helper function to add navigation controls to the image preview
 function addNavigationControls(imagePreview, hidden) {
+    console.log('Adding navigation controls, hidden:', hidden, 'uploadedImages.length:', uploadedImages.length);
+    
     // Add navigation controls
     const previewControls = document.createElement('div');
-    previewControls.className = 'preview-controls' + (hidden || uploadedImages.length <= 1 ? ' d-none' : '');
+    const shouldHide = hidden || uploadedImages.length <= 1;
+    previewControls.className = 'preview-controls' + (shouldHide ? ' d-none' : '');
     previewControls.innerHTML = `
         <button class="btn btn-sm btn-light" id="prevImageBtn">
             <i class="bi bi-chevron-left"></i>
@@ -286,11 +316,13 @@ function addNavigationControls(imagePreview, hidden) {
     
     // Add image counter
     const imageCounter = document.createElement('div');
-    imageCounter.className = 'image-counter' + (hidden || uploadedImages.length <= 1 ? ' d-none' : '');
+    imageCounter.className = 'image-counter' + (shouldHide ? ' d-none' : '');
     imageCounter.innerHTML = `
         <span id="currentImageCount">${currentImageIndex + 1}</span>/<span id="totalImageCount">${uploadedImages.length}</span>
     `;
     imagePreview.appendChild(imageCounter);
+    
+    console.log('Navigation controls added, visibility:', !shouldHide);
     
     // Add event listeners for navigation buttons
     const prevBtn = document.getElementById('prevImageBtn');
@@ -299,6 +331,7 @@ function addNavigationControls(imagePreview, hidden) {
     if (prevBtn && nextBtn) {
         prevBtn.addEventListener('click', navigateToPreviousImage);
         nextBtn.addEventListener('click', navigateToNextImage);
+        console.log('Navigation button event listeners added');
     }
 }
 
