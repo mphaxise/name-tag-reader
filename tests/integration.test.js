@@ -2,7 +2,7 @@
  * Integration Tests for Name Tag Reader
  * 
  * This file contains integration tests that verify the complete workflow
- * from image upload to data extraction and display.
+ * from image upload to data extraction and display with simplified UI.
  */
 
 // Mock data
@@ -64,15 +64,16 @@ describe('Name Tag Reader Integration', () => {
     const mockFile = createMockFile();
     const mockEvent = {
       target: {
-        files: [mockFile]
+        files: [mockFile, createMockFile('second.jpg')] // Add multiple files to test that only first is used
       }
     };
     
     // Call the upload handler
     handleImageUpload(mockEvent);
     
-    // Verify image was added to uploadedImages
+    // Verify only the first image was added to uploadedImages
     expect(uploadedImages.length).toBe(1);
+    expect(uploadedImages[0].name).toBe('test.jpg'); // Should be the first file only
     
     // Verify image preview was updated
     const imagePreview = document.getElementById('imagePreview');
@@ -133,23 +134,19 @@ describe('Name Tag Reader Integration', () => {
     window.alert = originalAlert;
   });
   
-  test('Should handle multiple images in batch processing', async () => {
-    // Upload multiple images
-    const mockFiles = [
-      createMockFile('image1.jpg'),
-      createMockFile('image2.jpg'),
-      createMockFile('image3.jpg')
-    ];
+  test('Should handle single image processing', async () => {
+    // Upload a single image
+    const mockFile = createMockFile('image1.jpg');
     
-    uploadedImages = mockFiles;
+    uploadedImages = [mockFile];
     
-    // Process images
+    // Process image
     await processImages();
     
-    // Verify each image was processed
-    expect(worker.recognize.mock.calls.length).toBe(mockFiles.length);
+    // Verify image was processed
+    expect(worker.recognize.mock.calls.length).toBe(1);
     
-    // Verify progress updates for each image
+    // Verify progress updates
     const statusText = document.getElementById('statusText');
     expect(statusText.innerHTML).toContain('complete');
   });

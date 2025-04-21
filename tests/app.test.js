@@ -2,7 +2,7 @@
  * Name Tag Reader Application Tests
  * 
  * These tests verify the functionality of the Name Tag Reader application,
- * focusing on the recent changes to the Process Images button functionality.
+ * focusing on the simplified UI with single image handling and no sorting functionality.
  */
 
 // Mock DOM elements
@@ -96,11 +96,17 @@ describe('Process Button Functionality', () => {
 });
 
 describe('Image Processing Functionality', () => {
-    test('Should handle multiple uploads of the same image', () => {
+    test('Should handle single image upload', () => {
         // Mock the handleImageUpload function (simplified)
         function handleImageUpload(event) {
             const files = event.target.files;
-            window.uploadedImages = Array.from(files);
+            if (!files || files.length === 0) return;
+            
+            // Clear existing images
+            window.uploadedImages = [];
+            
+            // Add only the first file to uploadedImages array
+            window.uploadedImages.push(files[0]);
             
             // Enable process button
             document.getElementById('processBtn').removeAttribute('disabled');
@@ -121,8 +127,8 @@ describe('Image Processing Functionality', () => {
         // Handle upload
         handleImageUpload(mockEvent);
         
-        // Verify uploadedImages contains all three files
-        expect(window.uploadedImages.length).toBe(3);
+        // Verify uploadedImages contains only the first file
+        expect(window.uploadedImages.length).toBe(1);
         
         // Verify process button is enabled
         const processBtn = document.getElementById('processBtn');

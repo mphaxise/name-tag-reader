@@ -4,21 +4,21 @@
 
 ### Image Upload Tests
 - [ ] Upload a single image → Process Images button should enable
-- [ ] Upload multiple images → Process Images button should enable
-- [ ] Delete all images → Process Images button should disable
+- [ ] Upload multiple images → Only first image should be used and notification should appear
+- [ ] Delete image → Process Images button should disable
 - [ ] Replace an image → Process Images button should remain enabled
 
 ### Camera Capture Tests
 - [ ] Click "Capture from Camera" → Camera should open
 - [ ] Take a photo → Process Images button should enable
 - [ ] Close camera without taking photo → Process Images button should remain in previous state
-- [ ] Take multiple photos in sequence → Process Images button should remain enabled
+- [ ] Take a new photo → Previous photo should be replaced
 
 ### Processing Tests
 - [ ] Upload image → Enable button → Process image → Check results
 - [ ] Take photo → Enable button → Process image → Check results
-- [ ] Process multiple images → Check all are processed
-- [ ] Process the same image multiple times → Check for duplicate entries
+- [ ] Process image → Check results are displayed in unsorted order
+- [ ] Click on table headers → Verify no sorting occurs
 
 ## UI Responsiveness Tests
 
@@ -42,17 +42,17 @@
 ## Performance Tests
 
 - [ ] Process large image → Check performance
-- [ ] Process multiple images in batch → Check performance
-- [ ] Test memory usage during batch processing
+- [ ] Test memory usage during processing
+- [ ] Verify simplified UI improves performance
 
 ## Completed Tests
 
 | Test Description | Status | Notes |
 |------------------|--------|-------|
-| Upload single image enables button | ✅ | Fixed with MutationObserver |
-| Camera capture enables button | ✅ | Fixed with direct DOM manipulation |
-| Button remains enabled after processing | ✅ | Verified working |
-| Button is disabled when no images present | ✅ | Default state works correctly |
+| Upload single image enables button | ✅ | Works correctly |
+| Only first image is used when multiple are uploaded | ✅ | Simplified image handling |
+| Table displays data without sorting | ✅ | Removed sorting functionality |
+| Manual entry accordion works correctly | ✅ | Improved UI organization |
 
 ## Test Results Summary
 
@@ -63,6 +63,7 @@
 **Overall Status:** ✅ Pass / ⚠️ Partial Pass / ❌ Fail
 
 **Notes:**
-- The Process Images button now correctly enables after both file upload and camera capture
-- UI is responsive and works well across different screen sizes
-- No duplicate entries are removed when processing identical images (known limitation)
+- The UI has been simplified by removing navigation controls and sorting functionality
+- Only the first image is processed when multiple images are uploaded
+- Manual entry form is now in an accordion for better organization
+- Table displays data in the order it was added without sorting capability
