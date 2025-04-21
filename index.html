@@ -61,6 +61,23 @@
                             <input class="d-none" type="file" id="imageUpload" accept=".jpg,.jpeg,.png" multiple>
                             <p class="text-muted small mt-2">Supported formats: JPEG, PNG</p>
                         </div>
+                        
+                        <!-- Image Preview moved inside Upload Image card -->
+                        <div id="imagePreview" class="preview-container mb-3">
+                            <div class="empty-preview">
+                                <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
+                                <p class="text-muted">No image selected</p>
+                            </div>
+                        </div>
+                        <div id="processingStatus" class="mb-3 d-none">
+                            <div class="progress" style="height: 10px;">
+                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
+                            </div>
+                            <p id="statusText" class="mt-2">
+                                <i class="bi bi-cpu me-2"></i>Processing image...
+                            </p>
+                        </div>
+                        
                         <div class="d-grid gap-2 mb-3">
                             <button id="processBtn" class="btn btn-primary btn-lg">
                                 <i class="bi bi-magic me-2"></i>Process Images
@@ -82,30 +99,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="card shadow-sm mt-4 border-0">
-                    <div class="card-header bg-white border-bottom-0 pt-4">
-                        <h5 class="card-title">
-                            <i class="bi bi-image me-2 text-primary"></i>Image Preview
-                        </h5>
-                    </div>
-                    <div class="card-body text-center">
-                        <div id="imagePreview" class="preview-container">
-                            <div class="empty-preview">
-                                <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
-                                <p class="text-muted">No image selected</p>
-                            </div>
-                        </div>
-                        <div id="processingStatus" class="mt-4 d-none">
-                            <div class="progress" style="height: 10px;">
-                                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%"></div>
-                            </div>
-                            <p id="statusText" class="mt-2">
-                                <i class="bi bi-cpu me-2"></i>Processing image...
-                            </p>
-                        </div>
-                    </div>
-                </div>
             </div>
             
             <div class="col-md-6">
@@ -124,7 +117,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
+                        <div class="table-responsive mb-4">
                             <table id="resultTable" class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
@@ -139,40 +132,38 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div id="noResults" class="text-center py-5">
+                        <div id="noResults" class="text-center py-4 mb-4">
                             <i class="bi bi-clipboard-data display-4 text-muted mb-3"></i>
                             <p class="text-muted">No data extracted yet</p>
                             <p class="text-muted small">Upload an image and click "Process Images" to extract data</p>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="card shadow-sm mt-4 border-0">
-                    <div class="card-header bg-white border-bottom-0 pt-4">
-                        <h5 class="card-title">
+                        
+                        <!-- Manual Entry moved inside Extracted Data card -->
+                        <hr class="my-4">
+                        <h5 class="card-title mb-3">
                             <i class="bi bi-pencil-square me-2 text-primary"></i>Manual Entry
                         </h5>
-                    </div>
-                    <div class="card-body">
                         <form id="manualEntryForm">
-                            <div class="mb-3">
-                                <label for="manualName" class="form-label">Full Name</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                                    <input type="text" class="form-control" id="manualName" placeholder="e.g. Ryan Taylor">
+                            <div class="row">
+                                <div class="col-md-5 mb-3">
+                                    <label for="manualName" class="form-label">Full Name</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                        <input type="text" class="form-control" id="manualName" placeholder="e.g. Ryan Taylor">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="mb-3">
-                                <label for="manualOrg" class="form-label">Organization</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-building"></i></span>
-                                    <input type="text" class="form-control" id="manualOrg" placeholder="e.g. BLCK VC">
+                                <div class="col-md-5 mb-3">
+                                    <label for="manualOrg" class="form-label">Organization</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="bi bi-building"></i></span>
+                                        <input type="text" class="form-control" id="manualOrg" placeholder="e.g. BLCK VC">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-plus-circle me-2"></i>Add Entry
-                                </button>
+                                <div class="col-md-2 mb-3 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        <i class="bi bi-plus-circle me-2"></i>Add
+                                    </button>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -184,7 +175,7 @@
     <footer class="bg-light py-4 mt-5">
         <div class="container text-center">
             <p class="mb-0 text-muted">
-                <small>Name Tag Reader &copy; 2025 | <a href="https://github.com/mphaxise/name-tag-reader" class="text-decoration-none">GitHub Repository</a></small>
+                <span class="d-inline-block">Name Tag Reader &copy; 2025</span> | <a href="https://github.com/mphaxise/name-tag-reader" class="text-decoration-none">GitHub Repository</a>
             </p>
         </div>
     </footer>
