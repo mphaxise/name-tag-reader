@@ -675,9 +675,6 @@ function handleManualEntry(event) {
     
     // Show notification
     showNotification('success', 'Entry Added', 'The entry has been added to the table.');
-    
-    // Scroll to the table
-    document.querySelector('.table-responsive').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Download data as CSV or JSON
