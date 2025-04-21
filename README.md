@@ -90,9 +90,23 @@ The application includes a comprehensive testing suite to ensure functionality w
 2. Open `browser-test-runner.html` in your browser
 3. Click the "Run Tests" button to execute all tests
 
+## 🛠️ Installation
+
+### Method 1: Direct Download (Local Development)
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/mphaxise/name-tag-reader.git
+   ```
+
+2. Navigate to the project directory:
+   ```bash
+   cd name-tag-reader
+   ```
+
 3. Open `index.html` in your web browser
 
-### Method 2: Using npm
+### Method 2: Using npm (Local Development)
 
 1. Clone the repository and navigate to the project directory
 
@@ -103,10 +117,22 @@ The application includes a comprehensive testing suite to ensure functionality w
 
 3. Start the development server:
    ```bash
-   npm start
+   npm run dev
    ```
 
-4. Open your browser and navigate to `http://localhost:5000`
+4. Open your browser and navigate to `http://localhost:8080`
+
+### Method 3: Deploying to Render.com
+
+1. Create a free account on [Render.com](https://render.com)
+
+2. Create a new Web Service and connect your GitHub repository
+
+3. Configure the deployment settings:
+   - Build Command: `npm install`
+   - Start Command: `node server.js`
+
+4. Deploy the application and access it at the URL provided by Render
 
 ## 📱 How to Use
 
