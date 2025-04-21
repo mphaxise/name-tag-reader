@@ -300,15 +300,17 @@ function displayImage(file) {
 function addNavigationControls(imagePreview, hidden) {
     console.log('Adding navigation controls, hidden:', hidden, 'uploadedImages.length:', uploadedImages.length);
     
+    // Always show controls if we have multiple images, regardless of the hidden parameter
+    const shouldHide = uploadedImages.length <= 1;
+    
     // Add navigation controls
     const previewControls = document.createElement('div');
-    const shouldHide = hidden || uploadedImages.length <= 1;
     previewControls.className = 'preview-controls' + (shouldHide ? ' d-none' : '');
     previewControls.innerHTML = `
-        <button class="btn btn-sm btn-light" id="prevImageBtn">
+        <button id="prevImageBtn">
             <i class="bi bi-chevron-left"></i>
         </button>
-        <button class="btn btn-sm btn-light" id="nextImageBtn">
+        <button id="nextImageBtn">
             <i class="bi bi-chevron-right"></i>
         </button>
     `;
@@ -322,7 +324,7 @@ function addNavigationControls(imagePreview, hidden) {
     `;
     imagePreview.appendChild(imageCounter);
     
-    console.log('Navigation controls added, visibility:', !shouldHide);
+    console.log('Navigation controls added, visibility:', !shouldHide, 'Multiple images:', uploadedImages.length > 1);
     
     // Add event listeners for navigation buttons
     const prevBtn = document.getElementById('prevImageBtn');
