@@ -10,23 +10,15 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg shadow-sm">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="bi bi-card-heading me-2"></i>
-                Name Tag Reader
+                <i class="bi bi-card-heading me-2"></i>Name Tag Reader
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="https://github.com/mphaxise/name-tag-reader" target="_blank">
-                            <i class="bi bi-github me-1"></i> GitHub
-                        </a>
-                    </li>
-                </ul>
+            <div class="ms-auto">
+                <a href="https://github.com/yourusername/nametag-reader" target="_blank" class="btn btn-sm" style="background-color: var(--accent); color: white;">
+                    <i class="bi bi-github me-1"></i> GitHub
+                </a>
             </div>
         </div>
     </nav>
@@ -79,17 +71,17 @@
                         </div>
                         
                         <div class="d-grid gap-2 mb-3">
-                            <button id="processBtn" class="btn btn-primary btn-lg">
+                            <button id="processBtn" class="btn btn-lg w-100 mb-3" style="background-color: var(--accent); color: white;" disabled>
                                 <i class="bi bi-magic me-2"></i>Process Images
                             </button>
-                            <button id="captureBtn" class="btn btn-outline-secondary">
+                            <button id="captureBtn" class="btn btn-outline-primary">
                                 <i class="bi bi-camera me-2"></i>Capture from Camera
                             </button>
                         </div>
                         <div id="cameraContainer" class="d-none mb-3 camera-container">
                             <video id="camera" width="100%" autoplay></video>
                             <div class="camera-controls mt-2 d-flex gap-2">
-                                <button id="snapBtn" class="btn btn-success flex-grow-1">
+                                <button id="snapBtn" class="btn flex-grow-1" style="background-color: var(--accent); color: white;">
                                     <i class="bi bi-camera-fill me-2"></i>Take Photo
                                 </button>
                                 <button id="closeCameraBtn" class="btn btn-outline-danger">
@@ -107,12 +99,12 @@
                         <h5 class="card-title">
                             <i class="bi bi-table me-2 text-primary"></i>Extracted Data
                         </h5>
-                        <div class="btn-group">
-                            <button id="downloadCSV" class="btn btn-sm btn-success">
-                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> CSV
+                        <div>
+                            <button id="exportCSV" class="btn me-2" style="background-color: var(--accent); color: white;">
+                                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
                             </button>
-                            <button id="downloadJSON" class="btn btn-sm btn-info text-white">
-                                <i class="bi bi-file-earmark-code me-1"></i> JSON
+                            <button id="exportJSON" class="btn" style="background-color: var(--accent-light); color: white;">
+                                <i class="bi bi-file-earmark-code me-1"></i> Export JSON
                             </button>
                         </div>
                     </div>
@@ -145,7 +137,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2 mb-3 d-flex align-items-end">
-                                                    <button type="submit" class="btn btn-primary w-100">
+                                                    <button type="submit" class="btn w-100" style="background-color: var(--accent); color: white;">
                                                         <i class="bi bi-plus-circle me-2"></i>Add
                                                     </button>
                                                 </div>
@@ -182,11 +174,9 @@
         </div>
     </div>
     
-    <footer class="bg-light py-4 mt-5">
+    <footer class="py-4 mt-5">
         <div class="container text-center">
-            <p class="mb-0 text-muted">
-                <span class="d-inline-block">Name Tag Reader &copy; 2025</span> | <a href="https://github.com/mphaxise/name-tag-reader" class="text-decoration-none">GitHub Repository</a>
-            </p>
+            <p class="mb-0">Name Tag Reader | OCR Tool for Event Organizers</p>
         </div>
     </footer>
 
@@ -207,7 +197,7 @@
                     <p>The extracted data has been added to the table.</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn" data-bs-dismiss="modal" style="background-color: var(--primary); color: white;">Close</button>
                 </div>
             </div>
         </div>

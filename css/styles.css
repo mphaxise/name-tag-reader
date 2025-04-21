@@ -1,8 +1,15 @@
 /* Custom styles for Name Tag Reader */
 
 :root {
-    --primary: #0d6efd;
-    --primary-dark: #0b5ed7;
+    /* Main colors from the provided design */
+    --primary: #1a7d74; /* Teal/turquoise color */
+    --primary-dark: #156960;
+    --primary-light: #a3d5d1; /* Lighter teal for backgrounds */
+    --accent: #e67e22; /* Orange/coral color for buttons */
+    --accent-dark: #d35400;
+    --accent-light: #f39c12;
+    
+    /* Standard colors */
     --secondary: #6c757d;
     --success: #198754;
     --info: #0dcaf0;
@@ -10,22 +17,37 @@
     --danger: #dc3545;
     --light: #f8f9fa;
     --dark: #212529;
+    
+    /* UI elements */
     --border-radius: 0.5rem;
     --box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
     --transition: all 0.3s ease;
 }
 
 body {
-    background-color: #f8f9fa;
+    background-color: var(--primary-light);
     font-family: 'Poppins', sans-serif;
     color: #333;
     line-height: 1.6;
 }
 
 /* Navbar styling */
+.navbar {
+    background-color: var(--primary) !important;
+}
+
 .navbar-brand {
     font-weight: 600;
     letter-spacing: 0.5px;
+    color: white !important;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.nav-link:hover {
+    color: white !important;
 }
 
 /* Card styling */
@@ -75,24 +97,62 @@ body {
     padding: 0.75rem 1.5rem;
 }
 
+/* Primary buttons - Teal */
 .btn-primary {
     background-color: var(--primary);
     border-color: var(--primary);
+    color: white;
 }
 
 .btn-primary:hover {
     background-color: var(--primary-dark);
     border-color: var(--primary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.2);
+    box-shadow: 0 4px 8px rgba(26, 125, 116, 0.3);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: white;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.1);
+    box-shadow: 0 4px 8px rgba(26, 125, 116, 0.2);
 }
 
-.btn-success:hover, .btn-info:hover, .btn-danger:hover {
+/* Success buttons - Orange/Coral */
+.btn-success {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: var(--accent-dark);
+    border-color: var(--accent-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(230, 126, 34, 0.3);
+}
+
+/* Info buttons */
+.btn-info {
+    background-color: var(--accent-light);
+    border-color: var(--accent-light);
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(243, 156, 18, 0.3);
+}
+
+/* Other buttons */
+.btn-danger:hover {
     transform: translateY(-2px);
 }
 
@@ -251,6 +311,7 @@ body {
 .accordion-item {
     border-radius: var(--border-radius) !important;
     overflow: hidden;
+    border: none;
 }
 
 .accordion-button {
@@ -261,17 +322,21 @@ body {
 
 .accordion-button:not(.collapsed) {
     color: var(--primary);
-    background-color: rgba(13, 110, 253, 0.05);
+    background-color: rgba(26, 125, 116, 0.1);
     box-shadow: none;
 }
 
 .accordion-button:focus {
     box-shadow: none;
-    border-color: rgba(13, 110, 253, 0.25);
+    border-color: rgba(26, 125, 116, 0.25);
 }
 
 .accordion-button::after {
     transition: var(--transition);
+}
+
+.accordion-button.bg-light {
+    background-color: white !important;
 }
 
 /* Modal styling */
@@ -292,6 +357,16 @@ body {
 /* Footer */
 footer {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
+    background-color: var(--primary);
+    color: white;
+}
+
+footer .text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+footer a {
+    color: white !important;
 }
 
 /* Responsive adjustments */
