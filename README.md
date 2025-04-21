@@ -1,7 +1,7 @@
 # Name Tag Reader
 
 ![Name Tag Reader](https://img.shields.io/badge/OCR-Tesseract.js-blue)
-![Version](https://img.shields.io/badge/version-1.0.2-green)
+![Version](https://img.shields.io/badge/version-1.0.3-green)
 ![License](https://img.shields.io/badge/license-MIT-orange)
 
 A browser-based application that processes images containing name tags, extracts text using OCR technology, and outputs structured data in a table format. Perfect for event organizers, networking events, and conferences to quickly digitize attendee information from name tags.
@@ -50,16 +50,18 @@ Visit the [GitHub repository](https://github.com/mphaxise/name-tag-reader) to ac
    cd name-tag-reader
    ```
 
-## 🔄 Recent Updates (v1.0.2)
+## 🔄 Recent Updates (v1.0.3)
 
 ### UI and Functionality Improvements
+- **Enhanced Upload Status**: Added a prominent status badge that clearly shows how many images are ready to process
 - **Simplified Image Handling**: Removed multi-image navigation controls for a more streamlined experience
+- **Improved Upload Instructions**: Clarified instructions for selecting multiple images
+- **Responsive Status Indicator**: Status badge changes color (gray to green) when images are uploaded
 - **Improved Image Preview**: Enhanced image preview with subtle hover effects and better scaling
-- **Removed Table Filtering/Sorting**: Simplified the results table by removing filtering and sorting functionality
-- **Cleaner Table Display**: Removed unnecessary UI elements like the results counter
-- **Manual Entry Accordion**: Converted the manual entry form into an accordion for a cleaner UI
+- **Cleaner Interface**: Removed unnecessary UI elements for a more focused user experience
 
 ### Technical Improvements
+- **Inline Status Updates**: Implemented direct DOM updates for more reliable status indication
 - **Reduced Code Complexity**: Eliminated approximately 300 lines of unnecessary navigation and filtering code
 - **Improved Error Handling**: Added more robust checks for DOM elements and better error feedback
 - **Enhanced Logging**: Added detailed logging for better debugging and troubleshooting

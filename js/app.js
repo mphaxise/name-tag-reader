@@ -1,10 +1,13 @@
 // Name Tag Reader Application
 
 // Global variables
-let extractedData = [];
-let currentImageIndex = 0;
 let uploadedImages = [];
+let currentImageIndex = 0;
 let stream = null;
+let worker = null;
+
+// Debug flag - set to true for detailed logging
+const DEBUG = true;
 
 // UI state management functions
 const UIManager = {
@@ -71,6 +74,8 @@ const DataManager = {
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', async () => {
+    if (DEBUG) console.log('DOM fully loaded and parsed');
+    
     // Initialize UI elements
     const imageUpload = document.getElementById('imageUpload');
     const processBtn = document.getElementById('processBtn');
@@ -81,24 +86,86 @@ document.addEventListener('DOMContentLoaded', async () => {
     const camera = document.getElementById('camera');
     const imagePreview = document.getElementById('imagePreview');
     const processingStatus = document.getElementById('processingStatus');
-    const progressBar = document.getElementById('progressBar');
-    const statusText = document.getElementById('statusText');
-    const resultBody = document.getElementById('resultBody');
-    const noResults = document.getElementById('noResults');
     const exportCSV = document.getElementById('exportCSV');
     const exportJSON = document.getElementById('exportJSON');
     const manualEntryForm = document.getElementById('manualEntryForm');
-
+    const browseBtn = document.getElementById('browseBtn');
+    const uploadArea = document.getElementById('uploadArea');
+    const clearImagesBtn = document.getElementById('clearImagesBtn');
     
+    // Log which elements were found for debugging
+    if (DEBUG) {
+        console.log('UI elements initialized:', {
+            imageUpload: !!imageUpload,
+            browseBtn: !!browseBtn,
+            uploadArea: !!uploadArea,
+            clearImagesBtn: !!clearImagesBtn
+        });
+    }
+
     // Event listeners
-    imageUpload.addEventListener('change', handleImageUpload);
-    processBtn.addEventListener('click', processImages);
-    captureBtn.addEventListener('click', toggleCamera);
-    snapBtn.addEventListener('click', capturePhoto);
-    closeCameraBtn.addEventListener('click', closeCamera);
-    exportCSV.addEventListener('click', () => downloadData('csv'));
-    exportJSON.addEventListener('click', () => downloadData('json'));
-    manualEntryForm.addEventListener('submit', handleManualEntry);
+    if (imageUpload) {
+        imageUpload.addEventListener('change', handleImageUpload);
+        if (DEBUG) console.log('Added change event listener to imageUpload');
+    } else {
+        console.error('imageUpload element not found');
+    }
+    
+    // Add event listener for clear images button
+    if (clearImagesBtn) {
+        clearImagesBtn.addEventListener('click', clearAllImages);
+        if (DEBUG) console.log('Added click event listener to clearImagesBtn');
+    }
+    
+    if (processBtn) processBtn.addEventListener('click', processImages);
+    if (captureBtn) captureBtn.addEventListener('click', toggleCamera);
+    if (snapBtn) snapBtn.addEventListener('click', capturePhoto);
+    if (closeCameraBtn) closeCameraBtn.addEventListener('click', closeCamera);
+    if (exportCSV) exportCSV.addEventListener('click', () => downloadData('csv'));
+    if (exportJSON) exportJSON.addEventListener('click', () => downloadData('json'));
+    if (manualEntryForm) manualEntryForm.addEventListener('submit', handleManualEntry);
+    
+    // Initialize the UI
+    updateStatusText();
+    
+    // Make the entire upload area clickable to trigger file input
+    if (uploadArea && imageUpload) {
+        uploadArea.addEventListener('click', (e) => {
+            // Don't trigger if clicking on a button inside the upload area
+            if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+                imageUpload.click();
+                console.log('Upload area clicked, triggering file input');
+            }
+        });
+        console.log('Added click event listener to uploadArea');
+    }
+    
+    // Connect browse button to file input
+    if (browseBtn && imageUpload) {
+        browseBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent the default button action
+            e.stopPropagation(); // Prevent event bubbling
+            console.log('Browse button clicked, attempting to trigger file input');
+            
+            // Use timeout to ensure the event is processed correctly
+            setTimeout(function() {
+                imageUpload.click();
+                console.log('File input click triggered');
+            }, 0);
+        });
+        console.log('Added click event listener to browseBtn');
+    }
+    
+    // Setup upload area click handlers
+    if (uploadArea) {
+        console.log('Setting up upload area');
+        // No drag and drop functionality - using buttons only
+    } else {
+        console.error('uploadArea element not found');
+    }
+    
+    // Initialize the file list panel
+    updateFileList();
     
     // Initialize Tesseract worker
     try {
@@ -110,7 +177,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 // Initialize Tesseract.js
-let worker;
 async function initTesseract() {
     try {
         worker = await Tesseract.createWorker();
@@ -123,45 +189,169 @@ async function initTesseract() {
     }
 }
 
-// Handle image upload
+/**
+ * Handle image upload event
+ * Processes selected files and updates the UI accordingly
+ * @param {Event} event - The change event from the file input
+ */
 function handleImageUpload(event) {
     const files = event.target.files;
     if (!files || files.length === 0) {
-        console.log('No files selected');
         return;
     }
     
-    console.log(`${files.length} files selected`);
-    
-    // Clear existing images
+    // Always clear existing images - we've removed the "add to existing" functionality
     uploadedImages = [];
     
-    // Add the first file to uploadedImages array
-    uploadedImages.push(files[0]);
-    console.log(`Added file: ${files[0].name}`);
-    
-    if (files.length > 1) {
-        showNotification('info', 'Multiple Images', 'Multiple images detected. Only the first image will be displayed.');
+    // Add new files to uploadedImages array
+    for (let i = 0; i < files.length; i++) {
+        uploadedImages.push(files[i]);
     }
     
-    // Reset current image index
-    currentImageIndex = 0;
+    // Always display the most recently uploaded image
+    if (uploadedImages.length > 0) {
+        displayImage(uploadedImages[uploadedImages.length - 1]);
+    } else {
+        // Clear display if no images
+        displayImage(null);
+    }
     
-    // Display the image
-    displayImage(uploadedImages[0]);
+        // Status is now handled by inline script in HTML
+    // This ensures immediate feedback when files are selected
     
-    // Show notification
-    showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully.');
+    // Show notification with count of images
+    if (files.length > 1) {
+        showNotification('success', 'Images Uploaded', `${files.length} images have been uploaded.`);
+    } else if (files.length === 1) {
+        showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully.');
+    }
     
     // Update process button state
     UIManager.updateProcessButtonState();
 }
 
+// Update the process button state based on whether images are uploaded
+function updateProcessButtonState() {
+    const processBtn = document.getElementById('processBtn');
+    if (processBtn) {
+        processBtn.disabled = uploadedImages.length === 0;
+    }
+}
 
+// This function is kept empty as a placeholder in case it's called elsewhere
+function updateNavigationButtons() {
+    // Navigation buttons have been removed
+    return;
+}
+
+
+
+// Update thumbnails in the thumbnail strip
+function updateThumbnails() {
+    const thumbnailStrip = document.getElementById('thumbnailStrip');
+    
+    if (!thumbnailStrip) {
+        console.error('Thumbnail strip element not found');
+        return;
+    }
+    
+    // Clear existing thumbnails
+    thumbnailStrip.innerHTML = '';
+    
+    // If no images, return
+    if (uploadedImages.length === 0) {
+        // Add empty message
+        const emptyMessage = document.createElement('div');
+        emptyMessage.className = 'empty-thumbnails text-center w-100';
+        emptyMessage.innerHTML = '<p class="text-muted small">No images uploaded</p>';
+        thumbnailStrip.appendChild(emptyMessage);
+        return;
+    }
+    
+    // Create thumbnails for each image
+    uploadedImages.forEach((file, index) => {
+        const thumbnail = document.createElement('div');
+        thumbnail.className = 'thumbnail' + (index === currentImageIndex ? ' active' : '');
+        thumbnail.setAttribute('data-index', index);
+        thumbnail.setAttribute('title', file.name);
+        thumbnail.setAttribute('aria-label', `Image ${index + 1}: ${file.name}`);
+        thumbnail.setAttribute('tabindex', '0');
+        
+        // Create thumbnail image
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(file);
+        img.alt = `Thumbnail for ${file.name}`;
+        
+        // Add index badge
+        const indexBadge = document.createElement('div');
+        indexBadge.className = 'index-badge';
+        indexBadge.textContent = index + 1;
+        
+        // Add elements to thumbnail
+        thumbnail.appendChild(img);
+        thumbnail.appendChild(indexBadge);
+        
+        // Add click event to select image
+        thumbnail.addEventListener('click', () => {
+            // Update current image index
+            currentImageIndex = index;
+            
+            // Display the selected image
+            displayImage(uploadedImages[index]);
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+            
+            // Update image counter
+            updateImageCounter();
+            
+            // Update active thumbnail
+            updateActiveThumbnail();
+        });
+        
+        // Add keyboard navigation
+        thumbnail.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                thumbnail.click();
+            }
+        });
+        
+        // Add to thumbnail strip
+        thumbnailStrip.appendChild(thumbnail);
+    });
+    
+    // Make the thumbnail strip visible
+    thumbnailStrip.style.display = 'flex';
+    
+    console.log(`Created ${uploadedImages.length} thumbnails`);
+}
+
+// Update active thumbnail
+function updateActiveThumbnail() {
+    const thumbnails = document.querySelectorAll('.thumbnail');
+    
+    // Remove active class from all thumbnails
+    thumbnails.forEach(thumbnail => {
+        thumbnail.classList.remove('active');
+    });
+    
+    // Add active class to current thumbnail
+    const currentThumbnail = document.querySelector(`.thumbnail[data-index="${currentImageIndex}"]`);
+    if (currentThumbnail) {
+        currentThumbnail.classList.add('active');
+        
+        // Scroll thumbnail into view if needed
+        currentThumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+}
 
 // Display image in preview area
 function displayImage(file) {
-    console.log('displayImage called with file:', file ? file.name : 'null');
+    if (DEBUG) {
+        console.log('displayImage called with file:', file ? file.name : 'null');
+        console.log('Total uploaded images:', uploadedImages.length);
+    }
     
     const imagePreview = document.getElementById('imagePreview');
     if (!imagePreview) {
@@ -175,15 +365,12 @@ function displayImage(file) {
     if (!file) {
         // No file provided, show empty state
         const emptyPreview = document.createElement('div');
-        emptyPreview.className = 'empty-preview';
+        emptyPreview.className = 'text-center';
         emptyPreview.innerHTML = `
             <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
             <p class="text-muted">No image selected</p>
         `;
         imagePreview.appendChild(emptyPreview);
-        
-        // Update process button state
-        UIManager.updateProcessButtonState();
         return;
     }
     
@@ -206,8 +393,31 @@ function displayImage(file) {
         // Clear loading indicator
         imagePreview.innerHTML = '';
         
+        // Create container for image with proper styling
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'd-flex align-items-center justify-content-center';
+        imageContainer.style.width = '100%';
+        imageContainer.style.height = '100%';
+        
         // Add the image
-        imagePreview.appendChild(img);
+        imageContainer.appendChild(img);
+        imagePreview.appendChild(imageContainer);
+        
+        // Add filename caption
+        const filenameCaption = document.createElement('div');
+        filenameCaption.className = 'text-muted small mt-2';
+        filenameCaption.textContent = file.name;
+        filenameCaption.style.maxWidth = '100%';
+        filenameCaption.style.overflow = 'hidden';
+        filenameCaption.style.textOverflow = 'ellipsis';
+        filenameCaption.style.whiteSpace = 'nowrap';
+        imagePreview.appendChild(filenameCaption);
+        
+        // Update navigation buttons
+        updateNavigationButtons();
+        
+        // Update image counter
+        updateImageCounter();
         
         // Update process button state
         UIManager.updateProcessButtonState();
@@ -221,10 +431,11 @@ function displayImage(file) {
         imagePreview.innerHTML = '';
         
         const errorDiv = document.createElement('div');
-        errorDiv.className = 'empty-preview';
+        errorDiv.className = 'text-center';
         errorDiv.innerHTML = `
             <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
             <p class="text-danger">Error loading image</p>
+            <p class="text-muted small">Failed to load: ${file.name}</p>
         `;
         imagePreview.appendChild(errorDiv);
         
@@ -235,87 +446,128 @@ function displayImage(file) {
     try {
         img.src = URL.createObjectURL(file);
         img.alt = file.name || 'Uploaded image';
-        img.className = 'img-fluid';
+        img.className = 'img-fluid shadow';
+        img.style.maxHeight = '320px';
+        img.style.maxWidth = '100%';
+        img.style.objectFit = 'contain';
+        img.style.borderRadius = '4px';
     } catch (error) {
         console.error('Error creating object URL:', error);
         img.onerror();
     }
 }
 
+// Update active file in the list
+function updateActiveFileInList() {
+    // Remove active class from all file items
+    document.querySelectorAll('.file-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Add active class to current file item
+    const currentFileItem = document.querySelector(`.file-item[data-index="${currentImageIndex}"]`);
+    if (currentFileItem) {
+        currentFileItem.classList.add('active');
+        
+        // Scroll to the active item if needed
+        currentFileItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
 
-
-
-
-// Process all uploaded images
+// Process images with Tesseract.js
 async function processImages() {
     if (uploadedImages.length === 0) {
-        showNotification('error', 'No Images', 'Please upload at least one image first.');
+        showNotification('warning', 'No Images', 'Please upload at least one image before processing.');
         return;
     }
     
-    // Disable the process button while processing
+    // Disable process button during processing
     const processBtn = document.getElementById('processBtn');
     if (processBtn) processBtn.disabled = true;
     
-    // Save manual entries before clearing
-    const manualEntries = extractedData.filter(entry => entry.source === 'manual');
-    
-    // Clear all data except manual entries
-    extractedData = [...manualEntries];
-    
+    // Show processing status
     const processingStatus = document.getElementById('processingStatus');
     const progressBar = document.getElementById('progressBar');
     const statusText = document.getElementById('statusText');
     
-    processingStatus.classList.remove('d-none');
-    progressBar.style.width = '0%';
+    if (processingStatus) processingStatus.classList.remove('d-none');
+    if (progressBar) progressBar.style.width = '0%';
+    
+    // Clear existing data
+    extractedData = [];
     
     try {
+        // Initialize Tesseract if not already initialized
+        if (!worker) {
+            await initTesseract();
+        }
+        
+        // Process each image
         for (let i = 0; i < uploadedImages.length; i++) {
-            currentImageIndex = i;
-            displayImage(uploadedImages[i]);
+            const file = uploadedImages[i];
             
             // Update progress
-            const progress = Math.round((i / uploadedImages.length) * 50); // First half of progress bar
-            progressBar.style.width = `${progress}%`;
-            statusText.innerHTML = `<i class="bi bi-cpu me-2"></i>Processing image ${i+1} of ${uploadedImages.length}...`;
+            const progress = Math.round((i / uploadedImages.length) * 100);
+            if (progressBar) progressBar.style.width = `${progress}%`;
+            if (statusText) statusText.innerHTML = `<i class="bi bi-cpu me-2"></i>Processing image ${i+1} of ${uploadedImages.length}...`;
             
-            // Process the image
-            await processImage(uploadedImages[i]);
+            // Create image URL
+            const imageUrl = URL.createObjectURL(file);
+            
+            // Process with Tesseract
+            const result = await worker.recognize(imageUrl);
+            console.log('OCR Result:', result);
+            
+            // Extract name tags
+            const nameTagData = extractNameTags(result.data.text, file.name);
+            
+            // Add to extracted data
+            extractedData = [...extractedData, ...nameTagData];
+            
+            // Clean up URL
+            URL.revokeObjectURL(imageUrl);
         }
         
-        // Complete
-        progressBar.style.width = '100%';
-        statusText.innerHTML = '<i class="bi bi-check-circle me-2"></i>Processing complete!';
+        // Update UI with extracted data
+        updateDataTable(extractedData);
         
-        // Show success modal
-        if (extractedData.length > 0) {
-            showResultModal('success');
-        } else {
-            showResultModal('empty');
-        }
+        // Show success notification
+        showNotification('success', 'Processing Complete', `Successfully processed ${uploadedImages.length} image(s) and extracted ${extractedData.length} name tags.`);
+        
+        // Update progress to 100%
+        if (progressBar) progressBar.style.width = '100%';
+        if (statusText) statusText.innerHTML = `<i class="bi bi-check-circle me-2"></i>Processing complete!`;
+        
+        // Hide processing status after a delay
+        setTimeout(() => {
+            if (processingStatus) processingStatus.classList.add('d-none');
+        }, 2000);
         
     } catch (error) {
-        console.error('Error in batch processing:', error);
-        statusText.innerHTML = '<i class="bi bi-exclamation-triangle me-2"></i>Error processing images.';
-        showResultModal('error');
-    } finally {
-        // Hide progress after a delay
+        console.error('Error processing images:', error);
+        
+        // Show error notification
+        showNotification('error', 'Processing Error', 'An error occurred while processing images. Please try again.');
+        
+        // Update status
+        if (statusText) statusText.innerHTML = `<i class="bi bi-exclamation-triangle me-2"></i>Error processing images`;
+        if (progressBar) {
+            progressBar.style.width = '100%';
+            progressBar.classList.remove('bg-success');
+            progressBar.classList.add('bg-danger');
+        }
+        
+        // Hide processing status after a delay
         setTimeout(() => {
-            processingStatus.classList.add('d-none');
-            
-            // Reset image preview to show empty state
-            if (uploadedImages.length > 0) {
-                // Show the last processed image
-                displayImage(uploadedImages[uploadedImages.length - 1]);
-            } else {
-                // Show empty state
-                displayImage(null);
+            if (processingStatus) processingStatus.classList.add('d-none');
+            if (progressBar) {
+                progressBar.classList.remove('bg-danger');
+                progressBar.classList.add('bg-success');
             }
-            
-            // Re-enable the process button after processing is complete
-            UIManager.updateProcessButtonState();
-        }, 2000);
+        }, 3000);
+    } finally {
+        // Re-enable process button
+        if (processBtn) processBtn.disabled = false;
     }
 }
 
