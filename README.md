@@ -32,9 +32,9 @@ Visit the [GitHub repository](https://github.com/mphaxise/name-tag-reader) to ac
 
 | Number | Name             | Organization      |
 |--------|------------------|-------------------|
-| 1      | Aantorik Ganguly | Sozo Ventures     |
-| 2      | Nana Kusi Minkah | Mission BioCapital|
-| 3      | Ryan Taylor      | BLCK VC           |
+| 1      | John Smith       | Acme Corporation  |
+| 2      | Jane Doe         | Global Enterprises|
+| 3      | Alex Johnson     | Tech Innovations  |
 
 ## 🛠️ Installation
 

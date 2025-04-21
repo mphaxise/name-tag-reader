@@ -1,10 +1,16 @@
 # Manual Test Checklist for Name Tag Reader
 
-## Process Images Button Functionality
+## Upload Status and Process Button Functionality
+
+### Status Badge Tests
+- [ ] Initial state → Badge should show "No images uploaded" in gray
+- [ ] Upload a single image → Badge should show "1 image ready to process" in green
+- [ ] Upload multiple images → Badge should show "X images ready to process" in green
+- [ ] Delete all images → Badge should return to "No images uploaded" in gray
 
 ### Image Upload Tests
 - [ ] Upload a single image → Process Images button should enable
-- [ ] Upload multiple images → Only first image should be used and notification should appear
+- [ ] Upload multiple images → Most recent image should be displayed and notification should appear
 - [ ] Delete image → Process Images button should disable
 - [ ] Replace an image → Process Images button should remain enabled
 
@@ -21,6 +27,11 @@
 - [ ] Click on table headers → Verify no sorting occurs
 
 ## UI Responsiveness Tests
+
+### Status Badge Responsiveness
+- [ ] Verify status badge is visible on all screen sizes
+- [ ] Check that status text is readable on small screens
+- [ ] Verify color changes are visible on all devices
 
 ### Different Screen Sizes
 - [ ] Test on desktop (large screen)

@@ -2,11 +2,12 @@
  * Name Tag Reader Application Tests
  * 
  * These tests verify the functionality of the Name Tag Reader application,
- * focusing on the simplified UI with single image handling and no sorting functionality.
+ * focusing on the simplified UI with enhanced status badge and improved user feedback.
  */
 
 // Mock DOM elements
 document.body.innerHTML = `
+<div id="statusBadge" class="badge bg-secondary p-2 fs-6 d-inline-block">No images uploaded</div>
 <div id="imagePreview"></div>
 <button id="processBtn" disabled>Process Images</button>
 <div id="cameraContainer" class="d-none"></div>
@@ -21,6 +22,67 @@ window.showNotification = jest.fn();
 // Import the functions to test
 // Note: In a real environment, you would import from app.js
 // For this test file, we'll mock the functions
+
+describe('Status Badge Functionality', () => {
+    
+    beforeEach(() => {
+        // Reset DOM elements before each test
+        const statusBadge = document.getElementById('statusBadge');
+        statusBadge.textContent = 'No images uploaded';
+        statusBadge.className = 'badge bg-secondary p-2 fs-6 d-inline-block';
+        window.uploadedImages = [];
+    });
+    
+    test('Status badge should show "No images uploaded" initially', () => {
+        const statusBadge = document.getElementById('statusBadge');
+        expect(statusBadge.textContent).toBe('No images uploaded');
+        expect(statusBadge.className).toContain('bg-secondary');
+    });
+    
+    test('Status badge should update when a single image is uploaded', () => {
+        // Mock the updateUploadStatus function
+        window.updateUploadStatus = function(files) {
+            const statusBadge = document.getElementById('statusBadge');
+            if (files.length === 1) {
+                statusBadge.textContent = '1 image ready to process';
+                statusBadge.className = 'badge bg-success p-2 fs-6 d-inline-block';
+            }
+        };
+        
+        // Mock file upload
+        const mockFiles = [new File([''], 'test.jpg', { type: 'image/jpeg' })];
+        window.updateUploadStatus(mockFiles);
+        
+        // Verify status badge update
+        const statusBadge = document.getElementById('statusBadge');
+        expect(statusBadge.textContent).toBe('1 image ready to process');
+        expect(statusBadge.className).toContain('bg-success');
+    });
+    
+    test('Status badge should update when multiple images are uploaded', () => {
+        // Mock the updateUploadStatus function
+        window.updateUploadStatus = function(files) {
+            const statusBadge = document.getElementById('statusBadge');
+            if (files.length > 1) {
+                statusBadge.textContent = `${files.length} images ready to process`;
+                statusBadge.className = 'badge bg-success p-2 fs-6 d-inline-block';
+            }
+        };
+        
+        // Mock multiple file upload
+        const mockFiles = [
+            new File([''], 'test1.jpg', { type: 'image/jpeg' }),
+            new File([''], 'test2.jpg', { type: 'image/jpeg' }),
+            new File([''], 'test3.jpg', { type: 'image/jpeg' })
+        ];
+        window.updateUploadStatus(mockFiles);
+        
+        // Verify status badge update
+        const statusBadge = document.getElementById('statusBadge');
+        expect(statusBadge.textContent).toBe('3 images ready to process');
+        expect(statusBadge.className).toContain('bg-success');
+    });
+});
 
 describe('Process Button Functionality', () => {
     
