@@ -6,6 +6,29 @@ let currentImageIndex = 0;
 let uploadedImages = [];
 let stream = null;
 
+// UI state management functions
+const UIManager = {
+    // Centralized function to manage process button state
+    updateProcessButtonState: function() {
+        const processBtn = document.getElementById('processBtn');
+        if (!processBtn) return;
+        
+        // Enable button only if there are images to process
+        const hasImages = uploadedImages && uploadedImages.length > 0;
+        const imagePreview = document.getElementById('imagePreview');
+        const hasPreviewImage = imagePreview && imagePreview.querySelector('img');
+        
+        // Set button state based on conditions
+        if (hasImages || hasPreviewImage) {
+            processBtn.disabled = false;
+            console.log('Process button enabled by UIManager');
+        } else {
+            processBtn.disabled = true;
+            console.log('Process button disabled by UIManager');
+        }
+    }
+};
+
 // Data management functions
 const DataManager = {
     // Add an entry with source tracking
@@ -62,8 +85,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const statusText = document.getElementById('statusText');
     const resultBody = document.getElementById('resultBody');
     const noResults = document.getElementById('noResults');
-    const downloadCSV = document.getElementById('downloadCSV');
-    const downloadJSON = document.getElementById('downloadJSON');
+    const exportCSV = document.getElementById('exportCSV');
+    const exportJSON = document.getElementById('exportJSON');
     const manualEntryForm = document.getElementById('manualEntryForm');
     
     // Event listeners
@@ -72,8 +95,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     captureBtn.addEventListener('click', toggleCamera);
     snapBtn.addEventListener('click', capturePhoto);
     closeCameraBtn.addEventListener('click', closeCamera);
-    downloadCSV.addEventListener('click', () => downloadData('csv'));
-    downloadJSON.addEventListener('click', () => downloadData('json'));
+    exportCSV.addEventListener('click', () => downloadData('csv'));
+    exportJSON.addEventListener('click', () => downloadData('json'));
     manualEntryForm.addEventListener('submit', handleManualEntry);
     
     // Initialize Tesseract worker
@@ -110,9 +133,8 @@ function handleImageUpload(event) {
     // Display the first image
     displayImage(uploadedImages[0]);
     
-    // Force enable the process button using direct DOM manipulation
-    document.getElementById('processBtn').removeAttribute('disabled');
-    console.log('Process button enabled after file upload using direct DOM manipulation');
+    // Update process button state
+    UIManager.updateProcessButtonState();
     
     // Show notification
     showNotification('success', 'Image Uploaded', 'Image has been uploaded successfully. Click "Process Images" to extract data.');
@@ -174,17 +196,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Display image in preview area
 function displayImage(file) {
+    console.log('displayImage called with file:', file ? file.name : 'null');
+    
+    // Get the preview container
     const imagePreview = document.getElementById('imagePreview');
-    const reader = new FileReader();
+    if (!imagePreview) {
+        console.error('Image preview element not found');
+        return;
+    }
     
-    reader.onload = function(e) {
-        imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="img-fluid shadow-sm">`;
-        // Force enable the process button using direct DOM manipulation
-        document.getElementById('processBtn').removeAttribute('disabled');
-        console.log('Process button enabled in displayImage function');
-    };
+    // Clear previous content
+    imagePreview.innerHTML = '';
     
-    reader.readAsDataURL(file);
+    if (file) {
+        // Show loading indicator first
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'text-center';
+        loadingEl.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+        imagePreview.appendChild(loadingEl);
+        
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            // Remove loading indicator
+            imagePreview.innerHTML = '';
+            
+            // Create and add image element
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.alt = 'Preview';
+            img.className = 'img-fluid';
+            imagePreview.appendChild(img);
+            
+            console.log('Image added to preview container');
+            
+            // Enable the process button
+            document.getElementById('processBtn').disabled = false;
+        };
+        
+        reader.onerror = function() {
+            // Show error state
+            imagePreview.innerHTML = '';
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'empty-preview';
+            errorDiv.innerHTML = `
+                <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
+                <p class="text-danger">Error loading image</p>
+            `;
+            imagePreview.appendChild(errorDiv);
+            
+            console.error('Error reading file');
+        };
+        
+        // Start reading the file
+        try {
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Exception when reading file:', error);
+            reader.onerror();
+        }
+    } else {
+        // Show empty state
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'empty-preview';
+        emptyDiv.innerHTML = `
+            <i class="bi bi-image-alt display-3 text-muted mb-3"></i>
+            <p class="text-muted">No image selected</p>
+        `;
+        imagePreview.appendChild(emptyDiv);
+    }
 }
 
 // Process all uploaded images
@@ -193,6 +274,10 @@ async function processImages() {
         showNotification('error', 'No Images', 'Please upload at least one image first.');
         return;
     }
+    
+    // Disable the process button while processing
+    const processBtn = document.getElementById('processBtn');
+    if (processBtn) processBtn.disabled = true;
     
     // Save manual entries before clearing
     const manualEntries = extractedData.filter(entry => entry.source === 'manual');
@@ -240,6 +325,18 @@ async function processImages() {
         // Hide progress after a delay
         setTimeout(() => {
             processingStatus.classList.add('d-none');
+            
+            // Reset image preview to show empty state
+            if (uploadedImages.length > 0) {
+                // Show the last processed image
+                displayImage(uploadedImages[uploadedImages.length - 1]);
+            } else {
+                // Show empty state
+                displayImage(null);
+            }
+            
+            // Re-enable the process button after processing is complete
+            UIManager.updateProcessButtonState();
         }, 2000);
     }
 }
@@ -820,6 +917,11 @@ function closeCamera() {
     }
     
     cameraContainer.classList.add('d-none');
+    
+    // If no image was captured, ensure we show the empty state
+    if (uploadedImages.length === 0) {
+        displayImage(null);
+    }
 }
 
 // Capture photo from camera
@@ -829,35 +931,47 @@ function capturePhoto() {
     const camera = document.getElementById('camera');
     const canvas = document.getElementById('imageCanvas');
     const ctx = canvas.getContext('2d');
-    const processBtn = document.getElementById('processBtn');
     
-    // Set canvas dimensions to match video
-    canvas.width = camera.videoWidth;
-    canvas.height = camera.videoHeight;
+    // Show loading indicator in preview
+    const imagePreview = document.getElementById('imagePreview');
+    imagePreview.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Capturing...</span></div></div>';
     
-    // Draw video frame to canvas
-    ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
-    
-    // Convert to blob
-    canvas.toBlob(blob => {
-        // Create a file from the blob
-        const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+    try {
+        // Set canvas dimensions to match video
+        canvas.width = camera.videoWidth;
+        canvas.height = camera.videoHeight;
         
-        // Add to uploaded images
-        uploadedImages = [file];
-        currentImageIndex = 0;
+        // Draw video frame to canvas
+        ctx.drawImage(camera, 0, 0, canvas.width, canvas.height);
         
-        // Display the image
-        displayImage(file);
-        
-        // Force enable the process button using direct DOM manipulation
-        document.getElementById('processBtn').removeAttribute('disabled');
-        console.log('Process button enabled after camera capture using direct DOM manipulation');
-        
-        // Close camera
-        closeCamera();
+        // Convert to blob
+        canvas.toBlob(blob => {
+            // Create a file from the blob
+            const file = new File([blob], 'camera_capture.jpg', { type: 'image/jpeg' });
+            
+            // Add to uploaded images
+            uploadedImages = [file];
+            currentImageIndex = 0;
+            
+            // Display the image
+            displayImage(file);
+            
+            // Close camera
+            closeCamera();
+            
+            // Show notification
+            showNotification('success', 'Photo Captured', 'Photo has been captured successfully. Click "Process Images" to extract data.');
+        }, 'image/jpeg', 0.9);
+    } catch (error) {
+        console.error('Error capturing photo:', error);
+        imagePreview.innerHTML = `
+            <div class="empty-preview">
+                <i class="bi bi-exclamation-triangle display-3 text-danger mb-3"></i>
+                <p class="text-danger">Error capturing photo</p>
+            </div>
+        `;
         
         // Show notification
-        showNotification('success', 'Photo Captured', 'Photo has been captured successfully. Click "Process Images" to extract data.');
-    }, 'image/jpeg');
+        showNotification('error', 'Capture Failed', 'Failed to capture photo. Please try again.');
+    }
 }
